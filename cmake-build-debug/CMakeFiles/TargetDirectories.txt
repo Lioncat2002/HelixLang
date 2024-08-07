@@ -1,3 +1,0 @@
-D:/Cpp/helixlang/cmake-build-debug/CMakeFiles/helixlang.dir
-D:/Cpp/helixlang/cmake-build-debug/CMakeFiles/ALL_BUILD.dir
-D:/Cpp/helixlang/cmake-build-debug/CMakeFiles/ZERO_CHECK.dir

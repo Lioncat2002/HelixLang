@@ -1,6 +1,0 @@
-D:\Cpp\helixlang\main.cpp;D:\Cpp\helixlang\cmake-build-debug\helixlang.dir\Debug\main.obj
-D:\Cpp\helixlang\src\Lexer.cpp;D:\Cpp\helixlang\cmake-build-debug\helixlang.dir\Debug\Lexer.obj
-D:\Cpp\helixlang\src\Ast.cpp;D:\Cpp\helixlang\cmake-build-debug\helixlang.dir\Debug\Ast.obj
-D:\Cpp\helixlang\src\Parser.cpp;D:\Cpp\helixlang\cmake-build-debug\helixlang.dir\Debug\Parser.obj
-D:\Cpp\helixlang\src\Utils.cpp;D:\Cpp\helixlang\cmake-build-debug\helixlang.dir\Debug\Utils.obj
-D:\Cpp\helixlang\src\Sema.cpp;D:\Cpp\helixlang\cmake-build-debug\helixlang.dir\Debug\Sema.obj
