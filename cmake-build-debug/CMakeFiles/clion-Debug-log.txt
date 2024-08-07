@@ -1,0 +1,5 @@
+C:\Users\gamed\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -G "Visual Studio 17 2022" -S D:\Cpp\helixlang -B D:\Cpp\helixlang\cmake-build-debug
+-- Selecting Windows SDK version 10.0.22621.0 to target Windows 10.0.22631.
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: D:/Cpp/helixlang/cmake-build-debug
