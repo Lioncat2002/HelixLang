@@ -1,7 +1,6 @@
 #pragma once
 
 #include <optional>
-#include "Utils.h"
 #include "Ast.h"
 
 namespace hlx{

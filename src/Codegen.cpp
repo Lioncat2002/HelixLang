@@ -1,5 +1,6 @@
 #include "../include/Codegen.h"
 #include "Ast.h"
+#include <iostream>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -18,6 +19,7 @@ llvm::Module *hlx::Codegen::generateIR(){
     for(auto &&function:resolvedTree){
         generateFunctionDecl(*function);
     }
+    
 
     for(auto &&function:resolvedTree){
         generateFunctionBody(*function);
@@ -59,50 +61,53 @@ void hlx::Codegen::generateFunctionDecl(const ResolvedFunctionDecl &functionDecl
 }
 
 void hlx::Codegen::generateFunctionBody(const ResolvedFunctionDecl &functionDecl){
-    auto *function=_module.getFunction(functionDecl.identifier);
+  auto *function = _module.getFunction(functionDecl.identifier);
 
-    auto *entryBB=llvm::BasicBlock::Create(context,"entry",function);
-    builder.SetInsertPoint(entryBB);
+  auto *entryBB = llvm::BasicBlock::Create(context, "entry", function);
+  builder.SetInsertPoint(entryBB);
 
-    llvm::Value *undef = llvm::UndefValue::get(builder.getInt32Ty());
+  // Note: llvm:Instruction has a protected destructor.
+  llvm::Value *undef = llvm::UndefValue::get(builder.getInt32Ty());
   allocaInsertPoint = new llvm::BitCastInst(undef, undef->getType(),
                                             "alloca.placeholder", entryBB);
 
+  bool isVoid = functionDecl.type.kind == Type::Kind::Void;
+  if (!isVoid)
+    retVal = allocateStackVariable(function, "retval");
+  retBB = llvm::BasicBlock::Create(context, "return");
 
-    bool isVoid=functionDecl.type.kind==Type::Kind::Void;
-    if(!isVoid)
-        retVal=allocateStackVariable(function, "retval");
-    retBB=llvm::BasicBlock::Create(context,"return");
+  int idx = 0;
+  for (auto &&arg : function->args()) {
+    const auto *paramDecl = functionDecl.params[idx].get();
+    arg.setName(paramDecl->identifier);
 
-    if(retBB->hasNPredecessorsOrMore(1)){
-        builder.CreateBr(retBB);
-        retBB->insertInto(function);
-        builder.SetInsertPoint(retBB);
-    }
+    llvm::Value *var = allocateStackVariable(function, paramDecl->identifier);
+    builder.CreateStore(&arg, var);
 
-    int idx=0;
-    for(auto &&arg:function->args()){
-        const auto *paramDecl=functionDecl.params[idx].get();
-        arg.setName(paramDecl->identifier);
+    declarations[paramDecl] = var;
+    ++idx;
+  }
 
-        llvm::Value *var=allocateStackVariable(function,paramDecl->identifier);
-        builder.CreateStore(&arg, var);
-        declarations[paramDecl]=var;
-        ++idx;
-    }
+  if (functionDecl.identifier == "println")
+  generateBuiltinPrintBody(functionDecl);
+  else
+    generateBlock(*functionDecl.body);
 
-    if(functionDecl.identifier=="println")
-        generateBuiltinPrintBody(functionDecl);
-    else
-        generateBlock(*functionDecl.body);
-    allocaInsertPoint->eraseFromParent();
-    allocaInsertPoint=nullptr;
+  if (retBB->hasNPredecessorsOrMore(1)) {
+    builder.CreateBr(retBB);
+    retBB->insertInto(function);
+    builder.SetInsertPoint(retBB);
+  }
 
-    if(isVoid){
-        builder.CreateRetVoid();
-        return;
-    }
-    builder.CreateRet(builder.CreateLoad(builder.getDoubleTy(),retVal));
+  allocaInsertPoint->eraseFromParent();
+  allocaInsertPoint = nullptr;
+
+  if (isVoid) {
+    builder.CreateRetVoid();
+    return;
+  }
+
+  builder.CreateRet(builder.CreateLoad(builder.getDoubleTy(), retVal));
 }
 
 llvm::Type *hlx::Codegen::generateType(hlx::Type type){

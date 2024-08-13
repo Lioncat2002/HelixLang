@@ -39,8 +39,9 @@ int main(int argc, const char **argv) {
     for (auto &&fn : res) {
         fn->dump();
     }
+    
     hlx::Codegen codegen(std::move(res),argv[1]);
-
+    
      std::error_code EC;
     
     // Open a file for writing
@@ -50,7 +51,6 @@ int main(int argc, const char **argv) {
         llvm::errs() << "Could not open file: " << EC.message() << "\n";
         return -1;
     }
-
     // Write the module to the file
     codegen.generateIR()->print(fileStream, nullptr);
 
