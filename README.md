@@ -11,4 +11,6 @@ fn main(): void {
 }
 ```
 ## Todo:
-- [ ] Codegen using LLVM
+- [x] Codegen using LLVM
+- [ ] Operator support
+- [ ] Variables support
