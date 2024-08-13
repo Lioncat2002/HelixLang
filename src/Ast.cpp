@@ -1,5 +1,6 @@
 #include "../include/Ast.h"
 #include<iostream>
+#include <llvm/IR/LLVMContext.h>
 
 void hlx::FunctionDecl::dump(size_t level) const {
     std::cerr << indent(level) << "FunctionDecl: " << identifier << " : "

@@ -1,7 +1,3 @@
-fn wrapper(n: number): number {
-    return n;
-}
-
 fn main(): void {
-    println(wrapper(12.34));
+    println(10.32);
 }
