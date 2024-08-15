@@ -1,7 +1,6 @@
 #pragma once
 
 #include <optional>
-#include "../ast/Ast.h"
 #include "../ast/ResolvedAst.h"
 
 namespace hlx{
