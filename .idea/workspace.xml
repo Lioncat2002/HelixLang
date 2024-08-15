@@ -20,7 +20,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5693ed98-8b7e-4245-9156-ff62f0d161b2" name="Changes" comment="" />
+    <list default="true" id="5693ed98-8b7e-4245-9156-ff62f0d161b2" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -68,11 +70,6 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="helixlang" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="D:\Cpp\helixlang\helloworld.kitty" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="helixlang" TARGET_NAME="helixlang" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="helixlang" RUN_TARGET_NAME="helixlang">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -96,6 +93,7 @@
       <workItem from="1722941808920" duration="435000" />
       <workItem from="1723014765464" duration="870000" />
       <workItem from="1723123392353" duration="1449000" />
+      <workItem from="1723713850298" duration="85000" />
     </task>
     <servers />
   </component>
