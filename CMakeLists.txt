@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 project(helixlang)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -24,4 +24,4 @@ add_executable(helixlang main.cpp
         include/Codegen.h
         src/Codegen.cpp
         )
-target_link_libraries(helixlang LLVM-18)
+target_link_libraries(helixlang LLVM-14)

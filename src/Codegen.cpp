@@ -178,7 +178,7 @@ llvm::Value *hlx::Codegen::generateCallExpr(const ResolvedCallExpr &call){
 }
 
 void hlx::Codegen::generateBuiltinPrintBody(const ResolvedFunctionDecl &println){
-    auto *type=llvm::FunctionType::get(builder.getInt32Ty(),{builder.getPtrTy()},true);
+    auto *type=llvm::FunctionType::get(builder.getInt32Ty(),{builder.getInt8PtrTy()},true);
 
     auto *printf = llvm::Function::Create(type, llvm::Function::ExternalLinkage,
                                         "printf", _module);
