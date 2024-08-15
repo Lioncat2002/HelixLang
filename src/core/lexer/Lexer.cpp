@@ -1,4 +1,4 @@
-#include "../include/Lexer.h"
+#include "Lexer.h"
 
 bool isSpace(char c) {
     return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' ||

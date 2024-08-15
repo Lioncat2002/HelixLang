@@ -3,5 +3,5 @@ fn wrapper(n: number): number {
 }
 
 fn main(): void {
-    println(wrapper(12.34));
+    println(wrapper(12));
 }

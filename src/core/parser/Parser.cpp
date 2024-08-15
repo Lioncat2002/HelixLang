@@ -1,28 +1,4 @@
-#include "../include/Parser.h"
-#include <iostream>
-std::pair<std::vector<std::unique_ptr<hlx::FunctionDecl>>, bool> hlx::Parser::parseSourceFile(){
-    std::vector<std::unique_ptr<FunctionDecl>> functions;
-
-    while (nextToken.kind != TokenKind::Eof) {
-        if (nextToken.kind != TokenKind::KwFn) {
-            report(nextToken.location,
-                   "only function definitions are allowed on the top level");
-            //synchronize(TokenKind::KwFn);
-            //continue;
-        }
-
-        auto fn = parseFunctionDecl();
-        if (!fn) {
-            synchronize(TokenKind::KwFn);
-            continue;
-        }
-
-        functions.emplace_back(std::move(fn));
-    }
-
-
-    return {std::move(functions), !inCompleteAST};
-}
+#include "Parser.h"
 
 void hlx::Parser::synchronize(hlx::TokenKind kind) {
     inCompleteAST = true;
@@ -51,6 +27,30 @@ void hlx::Parser::synchronize(hlx::TokenKind kind) {
 
         eatNextToken();
     }
+}
+
+std::pair<std::vector<std::unique_ptr<hlx::FunctionDecl>>, bool> hlx::Parser::parseSourceFile(){
+    std::vector<std::unique_ptr<FunctionDecl>> functions;
+
+    while (nextToken.kind != TokenKind::Eof) {
+        if (nextToken.kind != TokenKind::KwFn) {
+            report(nextToken.location,
+                   "only function definitions are allowed on the top level");
+            synchronize(TokenKind::KwFn);
+            continue;
+        }
+
+        auto fn = parseFunctionDecl();
+        if (!fn) {
+            synchronize(TokenKind::KwFn);
+            continue;
+        }
+
+        functions.emplace_back(std::move(fn));
+    }
+
+
+    return {std::move(functions), !inCompleteAST};
 }
 //<functionDecl>
 //::= 'fn' <ident> '(' ')' ':' <type> <block>

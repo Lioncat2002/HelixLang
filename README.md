@@ -12,7 +12,7 @@ fn main(): void {
 ```
 
 ## Compile helix code:
-- `helixlang <filename>.kitty` generates the IR code
+- `helixlang <filename>.hlx` generates the IR code
 - `clang intermediate.ll` to get the final executable code
 ## Todo:
 - [x] Codegen using LLVM
