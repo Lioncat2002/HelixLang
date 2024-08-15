@@ -16,6 +16,8 @@ add_executable(helixlang main.cpp
         src/core/lexer/Lexer.cpp
         src/core/ast/Ast.h
         src/core/ast/Ast.cpp
+        src/core/ast/ResolvedAst.h
+        src/core/ast/ResolvedAst.cpp
         src/core/parser/Parser.h
         src/core/parser/Parser.cpp
         src/utils/Utils.cpp
