@@ -1,6 +1,4 @@
-#include "../include/Codegen.h"
-#include "Ast.h"
-#include <iostream>
+#include "Codegen.h"
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>

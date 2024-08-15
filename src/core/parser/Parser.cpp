@@ -1,5 +1,4 @@
-#include "../include/Parser.h"
-#include <iostream>
+#include "Parser.h"
 std::pair<std::vector<std::unique_ptr<hlx::FunctionDecl>>, bool> hlx::Parser::parseSourceFile(){
     std::vector<std::unique_ptr<FunctionDecl>> functions;
 

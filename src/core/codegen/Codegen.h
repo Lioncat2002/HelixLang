@@ -1,5 +1,5 @@
 #pragma once
-#include "Ast.h"
+#include "../ast/Ast.h"
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/Function.h>

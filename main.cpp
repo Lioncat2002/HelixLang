@@ -2,11 +2,10 @@
 #include <iostream>
 #include <llvm/Support/raw_ostream.h>
 #include <sstream>
-
-#include "include/Lexer.h"
-#include "include/Parser.h"
-#include "include/Sema.h"
-#include "include/Codegen.h"
+#include "src/core/lexer/Lexer.h"
+#include "src/core/parser/Parser.h"
+#include "src/core/sema/Sema.h"
+#include "src/core/codegen/Codegen.h"
 
 
 int main(int argc, const char **argv) {

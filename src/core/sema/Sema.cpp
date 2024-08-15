@@ -1,7 +1,7 @@
 #include <cassert>
 
-#include "../include/Sema.h"
-#include "../include/Utils.h"
+#include "Sema.h"
+#include "../../utils/Utils.h"
 
 namespace hlx {
 bool Sema::insertDeclToCurrentScope(ResolvedDecl &decl) {

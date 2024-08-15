@@ -2,8 +2,8 @@
 #include <memory>
 #include <optional>
 #include <vector>
-#include "Ast.h"
-#include "Lexer.h"
+#include "../ast/Ast.h"
+#include "../lexer/Lexer.h"
 
 namespace hlx{
     class Parser{
