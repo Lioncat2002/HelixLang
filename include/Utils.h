@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <string_view>
 #define varOrReturn(var, init)               \
   auto var = (init);                         \
@@ -17,7 +18,7 @@ namespace hlx{
     };
     struct SourceFile{
         std::string_view path;
-        std::string buffer;
+        std::string buffer="";
     };
     std::nullptr_t report(SourceLocation location, std::string_view message,
                           bool isWarning = false);
