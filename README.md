@@ -10,7 +10,17 @@ fn main(): void {
     println(wrapper(12.34));
 }
 ```
+
+## Compile helix code:
+- `helixlang <filename>.kitty` generates the IR code
+- `clang intermediate.ll` to get the final executable code
 ## Todo:
 - [x] Codegen using LLVM
 - [ ] Operator support
 - [ ] Variables support
+
+## Requirements:
+- LLVM 14
+- Clang
+- C++ 17
+- Cmake 3.22 or greater
