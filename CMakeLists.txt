@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(helixlang)
+project(helix)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -25,5 +25,7 @@ add_executable(helixlang main.cpp
         src/core/sema/Sema.cpp
         src/core/codegen/Codegen.h
         src/core/codegen/Codegen.cpp
+        src/utils/Driver.h
+        src/utils/Driver.cpp
         )
 target_link_libraries(helixlang LLVM-14)
