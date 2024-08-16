@@ -12,8 +12,8 @@ fn main(): void {
 ```
 
 ## Compile helix code:
-- `helixlang <filename>.hlx` generates the IR code
-- `clang intermediate.ll` to get the final executable code
+- `helix <filename>.hlx`
+- Help command at `helix -h`
 ## Todo:
 - [x] Codegen using LLVM
 - [ ] Operator support
