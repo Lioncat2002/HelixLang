@@ -31,5 +31,8 @@ namespace hlx{
         std::unique_ptr<std::vector<std::unique_ptr<Expr>>>
         parseArgumentList();
         std::pair<std::vector<std::unique_ptr<FunctionDecl>>,bool> parseSourceFile();
+
+        int getTokPrecedence(TokenKind tok);
+        std::unique_ptr<Expr> parseExprRHS(std::unique_ptr<Expr> lhs,int precedence);
     };
 }

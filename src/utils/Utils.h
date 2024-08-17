@@ -13,6 +13,7 @@
 
 namespace hlx {
 struct Dumpable {
+  public:
   [[nodiscard]] std::string indent(size_t level) const {
     return std::string(level * 2, ' ');
   }

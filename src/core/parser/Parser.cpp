@@ -1,4 +1,7 @@
 #include "Parser.h"
+#include <cstddef>
+#include <memory>
+#include <utility>
 
 void hlx::Parser::synchronize(hlx::TokenKind kind) {
     inCompleteAST = true;
@@ -191,7 +194,28 @@ std::unique_ptr<std::vector<std::unique_ptr<hlx::Expr>>> hlx::Parser::parseArgum
 }
 
 std::unique_ptr<hlx::Expr> hlx::Parser::parseExpr() {
-    return parsePrimary();
+    varOrReturn(lhs, parsePrimary());
+    return parseExprRHS(std::move(lhs),0);
+}
+
+std::unique_ptr<hlx::Expr> hlx::Parser::parseExprRHS(std::unique_ptr<Expr> lhs,int precedence){
+    while(true){
+        Token op=nextToken;
+        int curOpPrec=getTokPrecedence(op.kind);
+
+        if(curOpPrec<precedence)
+            return lhs;
+
+        eatNextToken();
+        varOrReturn(rhs, parsePrimary());
+        if(curOpPrec<getTokPrecedence(nextToken.kind)){
+            rhs=parseExprRHS(std::move(rhs), curOpPrec+1);
+            if(!rhs)
+                return nullptr;
+        }
+
+        lhs=std::make_unique<BinaryOperator>(op.location,std::move(lhs),std::move(rhs),op.kind);
+    }
 }
 
 std::unique_ptr<hlx::ParamDecl> hlx::Parser::parseParamDecl() {
@@ -232,4 +256,19 @@ std::unique_ptr<std::vector<std::unique_ptr<hlx::ParamDecl>>> hlx::Parser::parse
     eatNextToken(); // eat ')'
 
     return std::make_unique<std::vector<std::unique_ptr<ParamDecl>>>(std::move(parameterList));
+}
+
+
+int hlx::Parser::getTokPrecedence(hlx::TokenKind tok){
+    switch(tok){
+        case hlx::TokenKind::Asterisk:
+        case hlx::TokenKind::Slash:
+            return 6;
+        case hlx::TokenKind::Plus:
+        case hlx::TokenKind::Minus:
+            return 5;
+        default:
+            return -1;
+    
+    }
 }

@@ -2,7 +2,10 @@
 
 #include "../../utils/Utils.h"
 #include "../lexer/Token.h"
+#include <cstddef>
+#include <llvm-14/llvm/Support/ErrorHandling.h>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 namespace hlx {
@@ -67,7 +70,7 @@ struct Block:public Dumpable {
   std::vector<std::unique_ptr<Stmt>> statements;
   Block(SourceLocation location, std::vector<std::unique_ptr<Stmt>> statements)
       : location(location), statements(std::move(statements)) {}
-  void dump(size_t level = 0) const;
+  void dump(size_t level = 0) const override;
 };
 struct Type {
   enum class Kind { Void, KwNumber, Number, Custom };
@@ -117,7 +120,11 @@ struct BinaryOperator:public Expr{
                   lhs(std::move(lhs)),
                   rhs(std::move(rhs)),
                   op(op){}
+    
+    std::string_view getOpStr(TokenKind op) const;
 
+    void dump(size_t level = 0) const override;
+    
 };
 
 } // namespace hlx
