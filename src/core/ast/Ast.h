@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../utils/Utils.h"
+#include "../lexer/Token.h"
 #include <memory>
 #include <vector>
 
@@ -101,6 +102,22 @@ struct FunctionDecl : public Decl {
         body(std::move(body)), params(std::move(params)) {}
 
   void dump(size_t level = 0) const override;
+};
+
+struct BinaryOperator:public Expr{
+    std::unique_ptr<Expr> lhs;
+    std::unique_ptr<Expr> rhs;
+    TokenKind op;
+
+    BinaryOperator(SourceLocation location,
+                  std::unique_ptr<Expr> lhs,
+                  std::unique_ptr<Expr> rhs,
+                  TokenKind op)
+                  : Expr(location),
+                  lhs(std::move(lhs)),
+                  rhs(std::move(rhs)),
+                  op(op){}
+
 };
 
 } // namespace hlx
