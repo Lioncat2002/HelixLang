@@ -57,6 +57,18 @@ std::string_view hlx::getOpStr(hlx::TokenKind op) {
     return "*";
   if (op == TokenKind::Slash)
     return "/";
+  if (op == TokenKind::EqualEqual)
+    return "==";
+  if (op == TokenKind::AmpAmp)
+    return "&&";
+  if (op == TokenKind::PipePipe)
+    return "||";
+  if (op == TokenKind::Lt)
+    return "<";
+  if (op == TokenKind::Gt)
+    return ">";
+  if (op == TokenKind::Excl)
+    return "!";
 
   llvm_unreachable("unexpected operator");
 }

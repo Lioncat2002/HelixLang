@@ -51,7 +51,10 @@ namespace hlx {
       llvm::Value *generateCallExpr(const ResolvedCallExpr &call);
       llvm::Value *generateUnaryOperator(const ResolvedUnaryOperator &unop);
       llvm::Value *generateBinaryOperator(const ResolvedBinaryOperator &binop);
-      
+
+      llvm::Value *doubleToBool(llvm::Value *v);
+      llvm::Value *boolToDouble(llvm::Value *v);
+
       void generateBuiltinPrintBody(const ResolvedFunctionDecl &println);
       void generateMainWrapper();
     };
