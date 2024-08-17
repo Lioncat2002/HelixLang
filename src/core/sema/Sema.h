@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include "../ast/ResolvedAst.h"
 
@@ -26,8 +27,13 @@ namespace hlx{
         std::optional<Type> resolveType(Type parsedType);
         std::vector<std::unique_ptr<ResolvedFunctionDecl>> resolveSourceFile();
         std::vector<std::unique_ptr<ResolvedFunctionDecl>> resolveAST();
+        std::unique_ptr<ResolvedBinaryOperator> resolveBinaryOperator(const BinaryOperator &binop);
+        std::unique_ptr<ResolvedUnaryOperator> resolveUnaryOperator(const UnaryOperator &unary);
+        std::unique_ptr<ResolvedGroupingExpr> resolveGroupingExpr(const GroupingExpr &grouping);
+        
         std::unique_ptr<ResolvedFunctionDecl> createBuiltinPrintln();
         std::pair<ResolvedDecl *,int> lookupDecl(const std::string id);
+
         bool insertDeclToCurrentScope(ResolvedDecl &decl);
 
         class ScopeRAII{

@@ -34,5 +34,6 @@ namespace hlx{
 
         int getTokPrecedence(TokenKind tok);
         std::unique_ptr<Expr> parseExprRHS(std::unique_ptr<Expr> lhs,int precedence);
+        std::unique_ptr<Expr> parsePrefixExpr();
     };
 }

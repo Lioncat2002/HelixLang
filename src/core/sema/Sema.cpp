@@ -1,7 +1,10 @@
 #include <cassert>
+#include <memory>
+#include <utility>
 
-#include "Sema.h"
 #include "../../utils/Utils.h"
+#include "Sema.h"
+
 
 namespace hlx {
 bool Sema::insertDeclToCurrentScope(ResolvedDecl &decl) {
@@ -132,6 +135,37 @@ Sema::resolveReturnStmt(const ReturnStmt &returnStmt) {
                                               std::move(resolvedExpr));
 }
 
+std::unique_ptr<ResolvedBinaryOperator>
+Sema::resolveBinaryOperator(const BinaryOperator &binop) {
+  varOrReturn(resolvedLHS, resolveExpr(*binop.lhs));
+  varOrReturn(resolvedRHS, resolveExpr(*binop.rhs));
+
+  if (resolvedLHS->type.kind == Type::Kind::Void)
+    return report(
+        resolvedLHS->location,
+        "void expression cannot be used as LHS operand to binary operator");
+  if (resolvedRHS->type.kind == Type::Kind::Void)
+    return report(
+        resolvedRHS->location,
+        "void expression cannot be used as RHS operand to binary operator");
+
+  return std::make_unique<ResolvedBinaryOperator>(
+      binop.location, binop.op, std::move(resolvedLHS), std::move(resolvedRHS));
+}
+
+std::unique_ptr<ResolvedUnaryOperator>
+Sema::resolveUnaryOperator(const UnaryOperator &unary) {
+  varOrReturn(resolvedRHS, resolveExpr(*unary.operand));
+
+  if (resolvedRHS->type.kind == Type::Kind::Void)
+    return report(
+        resolvedRHS->location,
+        "void expression cannot be used as an operand to unary operator");
+
+  return std::make_unique<ResolvedUnaryOperator>(unary.location, unary.op,
+                                                 std::move(resolvedRHS));
+}
+
 std::unique_ptr<ResolvedExpr> Sema::resolveExpr(const Expr &expr) {
 
   if (const auto *number = dynamic_cast<const NumberLiteral *>(&expr))
@@ -144,8 +178,25 @@ std::unique_ptr<ResolvedExpr> Sema::resolveExpr(const Expr &expr) {
   if (const auto *callExpr = dynamic_cast<const CallExpr *>(&expr))
     return resolveCallExpr(*callExpr);
 
+  if (const auto *groupingExpr = dynamic_cast<const GroupingExpr *>(&expr))
+    return resolveGroupingExpr(*groupingExpr);
+
+  if (const auto *binaryOperator = dynamic_cast<const BinaryOperator *>(&expr))
+    return resolveBinaryOperator(*binaryOperator);
+
+  if (const auto *unaryOperator = dynamic_cast<const UnaryOperator *>(&expr))
+    return resolveUnaryOperator(*unaryOperator);
+
   assert(false && "unexpected expression");
   return nullptr;
+}
+
+std::unique_ptr<ResolvedGroupingExpr>
+Sema::resolveGroupingExpr(const GroupingExpr &grouping) {
+  varOrReturn(resolvedExpr, resolveExpr(*grouping.expr));
+
+  return std::make_unique<ResolvedGroupingExpr>(grouping.location,
+                                                std::move(resolvedExpr));
 }
 
 std::unique_ptr<ResolvedBlock> Sema::resolveBlock(const Block &block) {

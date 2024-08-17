@@ -1,5 +1,4 @@
 #include "Parser.h"
-#include <cstddef>
 #include <memory>
 #include <utility>
 
@@ -146,6 +145,17 @@ std::unique_ptr<hlx::Stmt> hlx::Parser::parseStmt() {
 std::unique_ptr<hlx::Expr> hlx::Parser::parsePrimary() {
     SourceLocation location = nextToken.location;
 
+    if(nextToken.kind==TokenKind::Lpar){
+        eatNextToken();//eat '('
+
+        varOrReturn(expr, parseExpr());
+
+        matchOrReturn(TokenKind::Rpar, "expected ')'");
+        eatNextToken();//eat ')'
+
+        return std::make_unique<GroupingExpr>(location,std::move(expr));
+    }
+
     if (nextToken.kind == TokenKind::Number) {
         auto literal = std::make_unique<NumberLiteral>(location, *nextToken.value);
         eatNextToken(); // eat NumberLiteral
@@ -194,7 +204,7 @@ std::unique_ptr<std::vector<std::unique_ptr<hlx::Expr>>> hlx::Parser::parseArgum
 }
 
 std::unique_ptr<hlx::Expr> hlx::Parser::parseExpr() {
-    varOrReturn(lhs, parsePrimary());
+    varOrReturn(lhs, parsePrefixExpr());
     return parseExprRHS(std::move(lhs),0);
 }
 
@@ -207,7 +217,7 @@ std::unique_ptr<hlx::Expr> hlx::Parser::parseExprRHS(std::unique_ptr<Expr> lhs,i
             return lhs;
 
         eatNextToken();
-        varOrReturn(rhs, parsePrimary());
+        varOrReturn(rhs, parsePrefixExpr());
         if(curOpPrec<getTokPrecedence(nextToken.kind)){
             rhs=parseExprRHS(std::move(rhs), curOpPrec+1);
             if(!rhs)
@@ -271,4 +281,16 @@ int hlx::Parser::getTokPrecedence(hlx::TokenKind tok){
             return -1;
     
     }
+}
+
+std::unique_ptr<hlx::Expr> hlx::Parser::parsePrefixExpr(){
+    Token tok=nextToken;
+
+    if(tok.kind!=TokenKind::Minus)
+        return parsePrimary();
+    eatNextToken();
+
+    varOrReturn(rhs, parsePrefixExpr());
+
+    return std::make_unique<UnaryOperator>(tok.location,std::move(rhs),tok.kind);
 }

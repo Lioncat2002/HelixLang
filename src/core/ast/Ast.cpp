@@ -48,24 +48,34 @@ void hlx::ParamDecl::dump(size_t level) const {
             << '\n';
 }
 
-std::string_view hlx::BinaryOperator::getOpStr(hlx::TokenKind op) const{
-      if(op==TokenKind::Plus)
-        return "+";
-      if(op==TokenKind::Minus)
-        return "-";
-      if(op==TokenKind::Asterisk)
-        return "*";
-      if(op==TokenKind::Slash)
-        return "/";
+std::string_view hlx::getOpStr(hlx::TokenKind op) {
+  if (op == TokenKind::Plus)
+    return "+";
+  if (op == TokenKind::Minus)
+    return "-";
+  if (op == TokenKind::Asterisk)
+    return "*";
+  if (op == TokenKind::Slash)
+    return "/";
 
-      llvm_unreachable("unexpected operator");
+  llvm_unreachable("unexpected operator");
 }
 
 void hlx::BinaryOperator::dump(size_t level) const {
-    std::cerr << indent(level) << "BinaryOperator: '" << getOpStr(op) << '\''
+  std::cerr << indent(level) << "BinaryOperator: '" << getOpStr(op) << '\''
             << '\n';
-    lhs->dump(level+1);
-    rhs->dump(level+1);
+  lhs->dump(level + 1);
+  rhs->dump(level + 1);
 }
 
+void hlx::UnaryOperator::dump(size_t level) const {
+  std::cerr << indent(level) << "BinaryOperator: '" << getOpStr(op) << '\''
+            << '\n';
+  operand->dump(level + 1);
+}
 
+void hlx::GroupingExpr::dump(size_t level) const {
+  std::cerr << indent(level) << "GroupingExpr:\n";
+
+  expr->dump(level + 1);
+}

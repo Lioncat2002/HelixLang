@@ -9,7 +9,8 @@
 #include <vector>
 
 namespace hlx {
-struct Decl:public Dumpable {
+  std::string_view getOpStr(TokenKind op);
+struct Decl : public Dumpable {
   SourceLocation location;
   std::string identifier;
 
@@ -18,7 +19,7 @@ struct Decl:public Dumpable {
 
   virtual ~Decl() = default;
 };
-struct Stmt:public Dumpable {
+struct Stmt : public Dumpable {
   SourceLocation location;
   Stmt(SourceLocation location) : location(location) {}
   virtual ~Stmt() = default;
@@ -65,7 +66,7 @@ struct ReturnStmt : public Stmt {
   void dump(size_t level = 0) const override;
 };
 
-struct Block:public Dumpable {
+struct Block : public Dumpable {
   SourceLocation location;
   std::vector<std::unique_ptr<Stmt>> statements;
   Block(SourceLocation location, std::vector<std::unique_ptr<Stmt>> statements)
@@ -78,7 +79,7 @@ struct Type {
   std::string name;
 
   static Type builtinVoid() { return {Kind::Void, "void"}; }
-  static Type builtinKwNumber() {return {Kind::KwNumber,"number"};}
+  static Type builtinKwNumber() { return {Kind::KwNumber, "number"}; }
   static Type builtinNumber() { return {Kind::Number, "number"}; }
   static Type custom(const std::string &name) { return {Kind::Custom, name}; }
 
@@ -107,24 +108,39 @@ struct FunctionDecl : public Decl {
   void dump(size_t level = 0) const override;
 };
 
-struct BinaryOperator:public Expr{
-    std::unique_ptr<Expr> lhs;
-    std::unique_ptr<Expr> rhs;
-    TokenKind op;
+struct BinaryOperator : public Expr {
+  std::unique_ptr<Expr> lhs;
+  std::unique_ptr<Expr> rhs;
+  TokenKind op;
 
-    BinaryOperator(SourceLocation location,
-                  std::unique_ptr<Expr> lhs,
-                  std::unique_ptr<Expr> rhs,
-                  TokenKind op)
-                  : Expr(location),
-                  lhs(std::move(lhs)),
-                  rhs(std::move(rhs)),
-                  op(op){}
-    
-    std::string_view getOpStr(TokenKind op) const;
+  BinaryOperator(SourceLocation location, std::unique_ptr<Expr> lhs,
+                 std::unique_ptr<Expr> rhs, TokenKind op)
+      : Expr(location), lhs(std::move(lhs)), rhs(std::move(rhs)), op(op) {}
 
-    void dump(size_t level = 0) const override;
-    
+  
+
+  void dump(size_t level = 0) const override;
+};
+
+struct UnaryOperator : public Expr {
+  std::unique_ptr<Expr> operand;
+  TokenKind op;
+
+  UnaryOperator(SourceLocation location, std::unique_ptr<Expr> operand,
+                TokenKind op)
+      : Expr(location), operand(std::move(operand)), op(op) {}
+
+  void dump(size_t level = 0) const override;
+};
+
+struct GroupingExpr:public Expr{
+  std::unique_ptr<Expr> expr;
+
+  GroupingExpr(SourceLocation location,std::unique_ptr<Expr> expr)
+              : Expr(location),
+              expr(std::move(expr)){}
+  
+  void dump(size_t level=0)const override;
 };
 
 } // namespace hlx

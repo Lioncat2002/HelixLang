@@ -159,10 +159,49 @@ llvm::Value *hlx::Codegen::generateExpr(const ResolvedExpr &expr){
     }
 
     if (auto *call = dynamic_cast<const ResolvedCallExpr *>(&expr))
-    return generateCallExpr(*call);
+        return generateCallExpr(*call);
+
+    if(auto *binop=dynamic_cast<const ResolvedBinaryOperator*>(&expr))
+        return generateBinaryOperator(*binop);
+
+    if(auto *unop=dynamic_cast<const ResolvedUnaryOperator*>(&expr))
+        return generateUnaryOperator(*unop);
+    
+    if(auto *grouping=dynamic_cast<const ResolvedGroupingExpr *>(&expr))
+        return generateExpr(*grouping->expr);
 
     llvm_unreachable("unexpected expression");
 }
+
+llvm::Value *hlx::Codegen::generateUnaryOperator(const ResolvedUnaryOperator &unop){
+    llvm::Value *operand=generateExpr(*unop.operand);
+
+    if(unop.op==TokenKind::Minus)
+        return builder.CreateFNeg(operand);
+
+    llvm_unreachable("unknown unary op");
+    return nullptr;
+}
+
+llvm::Value *hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop){
+    TokenKind op=binop.op;
+
+    llvm::Value *lhs=generateExpr(*binop.lhs);
+    llvm::Value *rhs=generateExpr(*binop.rhs);
+
+    if(op==TokenKind::Plus)
+        return builder.CreateFAdd(lhs, rhs);
+    if(op==TokenKind::Minus)
+        return builder.CreateFSub(lhs, rhs);
+    if(op==TokenKind::Asterisk)
+        return builder.CreateFMul(lhs, rhs);
+    if(op==TokenKind::Slash)
+        return builder.CreateFDiv(lhs, rhs);
+
+    llvm_unreachable("unexpected binary operator");
+    return nullptr;
+}
+
 
 llvm::Value *hlx::Codegen::generateCallExpr(const ResolvedCallExpr &call){
     llvm::Function *callee=_module.getFunction(call.callee->identifier);
