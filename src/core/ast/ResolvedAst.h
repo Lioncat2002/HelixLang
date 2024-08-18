@@ -1,5 +1,7 @@
 #pragma once
 #include "Ast.h"
+#include <cstddef>
+#include <memory>
 namespace hlx{
     
 struct ResolvedStmt:public Dumpable {
@@ -101,6 +103,48 @@ struct ResolvedReturnStmt : public ResolvedStmt {
       : ResolvedStmt(location), expr(std::move(expr)) {}
   void dump(size_t level = 0) const override;
   std::string indent(size_t level) const { return std::string(level * 2, ' '); }
+};
+
+struct ResolvedBinaryOperator:public ResolvedExpr{
+  TokenKind op;
+  std::unique_ptr<ResolvedExpr> lhs;
+  std::unique_ptr<ResolvedExpr> rhs;
+
+  ResolvedBinaryOperator(SourceLocation location,
+                          TokenKind op,
+                          std::unique_ptr<ResolvedExpr> lhs,
+                          std::unique_ptr<ResolvedExpr> rhs)
+                          : ResolvedExpr(location, lhs->type),
+                          op(op),
+                          lhs(std::move(lhs)),
+                          rhs(std::move(rhs)){}
+  
+  void dump(size_t level=0)const override;
+};
+
+struct ResolvedUnaryOperator:public ResolvedExpr{
+  TokenKind op;
+  std::unique_ptr<ResolvedExpr> operand;
+
+  ResolvedUnaryOperator(SourceLocation location,
+                        TokenKind op,
+                        std::unique_ptr<ResolvedExpr> operand)
+                        : ResolvedExpr(location,operand->type),
+                        op(op),
+                        operand(std::move(operand)){}
+  
+  void dump(size_t level=0)const override;
+};
+
+struct ResolvedGroupingExpr:public ResolvedExpr{
+  std::unique_ptr<ResolvedExpr> expr;
+
+  ResolvedGroupingExpr(SourceLocation location,
+                        std::unique_ptr<ResolvedExpr> expr)
+                        :ResolvedExpr(location, expr->type),
+                        expr(std::move(expr)){}
+  
+  void dump(size_t level=0)const override;
 };
 
 }

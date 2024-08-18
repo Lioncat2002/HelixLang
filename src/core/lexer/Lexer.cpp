@@ -1,4 +1,5 @@
 #include "Lexer.h"
+#include "Token.h"
 
 bool isSpace(char c) {
     return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' ||
@@ -36,7 +37,24 @@ hlx::Token hlx::Lexer::getNextToken() {
             return Token{tokenStartLocation,static_cast<TokenKind>(c)};
     }
 
-    if(currentChar=='/' && peekNextChar()=='/'){
+    if(currentChar=='=' &&peekNextChar()=='='){
+        eatNextChar();
+        return Token{tokenStartLocation,TokenKind::EqualEqual};
+    }
+
+    if(currentChar=='&' &&peekNextChar()=='&'){
+        eatNextChar();
+        return Token{tokenStartLocation,TokenKind::AmpAmp};
+    }
+
+    if(currentChar=='|' &&peekNextChar()=='|'){
+        eatNextChar();
+        return Token{tokenStartLocation,TokenKind::PipePipe};
+    }
+
+    if(currentChar=='/'){
+        if(peekNextChar()!='/')
+            return Token{tokenStartLocation,TokenKind::Slash};
         while(peekNextChar()!='\n' && peekNextChar()!='\0')
             eatNextChar();
 

@@ -1,0 +1,11 @@
+fn true(): number {
+    return 1;
+}
+
+fn false(): number {
+    return 0;
+}
+
+fn main(): void {
+    println(true() == false() || 1==0);
+}

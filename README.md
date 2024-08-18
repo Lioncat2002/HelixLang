@@ -16,7 +16,7 @@ fn main(): void {
 - Help command at `helix -h`
 ## Todo:
 - [x] Codegen using LLVM
-- [ ] Operator support
+- [x] Operator support
 - [ ] Variables support
 
 ## Requirements:

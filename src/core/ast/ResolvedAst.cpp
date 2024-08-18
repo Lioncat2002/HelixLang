@@ -1,4 +1,6 @@
 #include "ResolvedAst.h"
+#include "Ast.h"
+#include <cstddef>
 #include <iostream>
 void hlx::ResolvedNumberLiteral::dump(size_t level) const {
     std::cerr << indent(level) << "ResolvedNumberLiteral: '" << value << "'\n";
@@ -44,4 +46,25 @@ void hlx::ResolvedReturnStmt::dump(size_t level) const {
 
     if (expr)
         expr->dump(level + 1);
+}
+
+void hlx::ResolvedBinaryOperator::dump(size_t level)const{
+    std::cerr<<indent(level)<<"ResolvedBinaryOperator: '"<<getOpStr(op)
+    <<'\''<<'\n';
+
+    lhs->dump(level+1);
+    rhs->dump(level+1);
+}
+
+void hlx::ResolvedUnaryOperator::dump(size_t level)const{
+    std::cerr << indent(level) << "ResolvedUnaryOperator: '" << getOpStr(op)
+            << '\'' << '\n';
+
+  operand->dump(level + 1);
+}
+
+void hlx::ResolvedGroupingExpr::dump(size_t level)const{
+    std::cerr<<indent(level)<<"ResolvedGroupingExpr:\n";
+
+    expr->dump(level+1);
 }
