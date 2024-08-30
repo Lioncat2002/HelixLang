@@ -1,0 +1,19 @@
+fn fib(n:number):number{
+    if(n<2){
+        return n;
+    }
+    return fib(n-1)+fib(n-2);
+}
+
+fn printFib(count:number,n:number):void{
+    if(!(count==0)){
+        println(fib(n-count));
+        printFib(count-1,n);
+    }
+    
+}
+
+
+fn main(): void {
+    printFib(10,10);
+}

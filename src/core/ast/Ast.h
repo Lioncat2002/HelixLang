@@ -93,6 +93,13 @@ struct IfStmt:public Stmt{
   void dump(size_t level = 0) const override;
 };
 
+struct WhileStmt:public Stmt{
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Block> block;
+
+  
+};
+
 struct Type {
   enum class Kind { Void, KwNumber, Number, Custom };
   Kind kind;
