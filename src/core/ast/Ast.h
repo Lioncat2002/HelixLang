@@ -6,6 +6,7 @@
 #include <llvm-14/llvm/Support/ErrorHandling.h>
 #include <memory>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace hlx {
@@ -28,6 +29,8 @@ struct Stmt : public Dumpable {
 struct Expr : public Stmt {
   Expr(SourceLocation location) : Stmt(location) {}
 };
+
+
 
 struct DeclRefExpr : public Expr {
   std::string identifier;
@@ -73,6 +76,30 @@ struct Block : public Dumpable {
       : location(location), statements(std::move(statements)) {}
   void dump(size_t level = 0) const override;
 };
+
+struct IfStmt:public Stmt{
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Block> trueBlock;
+  std::unique_ptr<Block> falseBlock;
+
+  IfStmt(SourceLocation location,
+        std::unique_ptr<Expr> condition,
+        std::unique_ptr<Block> trueBlock,
+        std::unique_ptr<Block> falseBlock=nullptr)
+        :Stmt(location),
+        condition(std::move(condition)),
+        trueBlock(std::move(trueBlock)),
+        falseBlock(std::move(falseBlock)){}
+  void dump(size_t level = 0) const override;
+};
+
+struct WhileStmt:public Stmt{
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Block> block;
+
+  
+};
+
 struct Type {
   enum class Kind { Void, KwNumber, Number, Custom };
   Kind kind;

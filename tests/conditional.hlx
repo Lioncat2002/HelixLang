@@ -7,5 +7,9 @@ fn false(): number {
 }
 
 fn main(): void {
-    println(true() == false() || 1==0);
+    if(2<3){
+        println(10);
+    }else{
+        println(5);
+    }
 }
