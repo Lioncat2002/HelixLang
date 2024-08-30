@@ -48,6 +48,7 @@ namespace hlx {
       llvm::Value *generateStmt(const ResolvedStmt &stmt);
       llvm::Value *generateReturnStmt(const ResolvedReturnStmt &stmt);
       llvm::Value *generateExpr(const ResolvedExpr &expr);
+      llvm::Value *generateIfStmt(const ResolvedIfStmt &stmt);
       llvm::Value *generateCallExpr(const ResolvedCallExpr &call);
       llvm::Value *generateUnaryOperator(const ResolvedUnaryOperator &unop);
       llvm::Value *generateBinaryOperator(const ResolvedBinaryOperator &binop);

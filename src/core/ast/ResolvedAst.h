@@ -147,4 +147,20 @@ struct ResolvedGroupingExpr:public ResolvedExpr{
   void dump(size_t level=0)const override;
 };
 
+struct ResolvedIfStmt:public ResolvedStmt{
+  std::unique_ptr<ResolvedExpr> condition;
+  std::unique_ptr<ResolvedBlock> trueBlock;
+  std::unique_ptr<ResolvedBlock> falseBlock;
+
+  ResolvedIfStmt(SourceLocation location,
+                  std::unique_ptr<ResolvedExpr> condition,
+                  std::unique_ptr<ResolvedBlock> trueBlock,
+                  std::unique_ptr<ResolvedBlock> falseBlock=nullptr)
+                  : ResolvedStmt(location),
+                  condition(std::move(condition)),
+                  trueBlock(std::move(trueBlock)),
+                  falseBlock(std::move(falseBlock)){}
+  void dump(size_t level = 0) const override;
+};
+
 }

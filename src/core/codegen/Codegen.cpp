@@ -131,6 +131,36 @@ void hlx::Codegen::generateBlock(const hlx::ResolvedBlock &block) {
   }
 }
 
+llvm::Value *hlx::Codegen::generateIfStmt(const ResolvedIfStmt &stmt){
+    llvm::Function *function=getCurrentFunction();
+
+    auto *trueBB=llvm::BasicBlock::Create(context,"if.true");
+    auto exitBB=llvm::BasicBlock::Create(context,"if.exit");
+
+    llvm::BasicBlock *elseBB=exitBB;
+    if(stmt.falseBlock)
+      elseBB=llvm::BasicBlock::Create(context,"if.false");
+
+    llvm::Value *cond=generateExpr(*stmt.condition);
+    builder.CreateCondBr(doubleToBool(cond),trueBB,elseBB);
+
+    trueBB->insertInto(function);
+    builder.SetInsertPoint(trueBB);
+    generateBlock(*stmt.trueBlock);
+    builder.CreateBr(exitBB);
+
+    if(stmt.falseBlock){
+      elseBB->insertInto(function);
+      builder.SetInsertPoint(elseBB);
+      generateBlock(*stmt.falseBlock);
+      builder.CreateBr(exitBB);
+    }
+
+    exitBB->insertInto(function);
+    builder.SetInsertPoint(exitBB);
+    return nullptr;
+}
+
 llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
   if (auto *expr = dynamic_cast<const ResolvedExpr *>(&stmt)) {
     return generateExpr(*expr);
@@ -138,6 +168,10 @@ llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
 
   if (auto *returnStmt = dynamic_cast<const ResolvedReturnStmt *>(&stmt)) {
     return generateReturnStmt(*returnStmt);
+  }
+
+  if (auto *ifStmt = dynamic_cast<const ResolvedIfStmt *>(&stmt)) {
+    return generateIfStmt(*ifStmt);
   }
 
   llvm_unreachable("unknown statement");

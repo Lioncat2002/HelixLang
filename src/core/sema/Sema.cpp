@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <utility>
 
@@ -100,9 +101,32 @@ std::unique_ptr<ResolvedCallExpr> Sema::resolveCallExpr(const CallExpr &call) {
       call.location, *resolvedFunctionDecl, std::move(resolvedArguments));
 }
 
+std::unique_ptr<ResolvedIfStmt> Sema::resolveIfStmt(const IfStmt &ifStmt){
+    varOrReturn(condition, resolveExpr(*ifStmt.condition));
+
+    if(condition->type.kind!=Type::Kind::Number)
+      return report(condition->location, "expected number in condition");
+
+    varOrReturn(resolvedTrueBlock, resolveBlock(*ifStmt.trueBlock));
+
+    std::unique_ptr<ResolvedBlock> resolvedFalseBlock;
+    if(ifStmt.falseBlock){
+      resolvedFalseBlock=resolveBlock(*ifStmt.falseBlock);
+      if(!resolvedFalseBlock)
+        return nullptr;
+    }
+
+    return std::make_unique<ResolvedIfStmt>(ifStmt.location,std::move(condition),std::move(resolvedTrueBlock),std::move(resolvedFalseBlock ));
+    
+}
+
 std::unique_ptr<ResolvedStmt> Sema::resolveStmt(const Stmt &stmt) {
   if (auto *expr = dynamic_cast<const Expr *>(&stmt))
     return resolveExpr(*expr);
+
+  if(auto *ifStmt=dynamic_cast<const IfStmt *>(&stmt)){
+    return resolveIfStmt(*ifStmt);
+  }
 
   auto *returnStmt = dynamic_cast<const ReturnStmt *>(&stmt);
   assert(returnStmt && "unknown statement");

@@ -21,6 +21,7 @@ namespace hlx{
         std::unique_ptr<ReturnStmt> parseReturnStmt();
         std::unique_ptr<Stmt> parseStmt();
         std::unique_ptr<FunctionDecl> parseFunctionDecl();
+        std::unique_ptr<IfStmt> parseIfStmt();
         std::optional<Type> parseType();
         std::unique_ptr<Block> parseBlock();
         std::unique_ptr<Expr> parsePrimary();

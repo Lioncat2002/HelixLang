@@ -91,3 +91,11 @@ void hlx::GroupingExpr::dump(size_t level) const {
 
   expr->dump(level + 1);
 }
+
+void hlx::IfStmt::dump(size_t level) const{
+  std::cerr<<indent(level)<<"IfStmt\n";
+  condition->dump(level+1);
+  trueBlock->dump(level+1);
+  if(falseBlock)
+    falseBlock->dump(level+1);
+}

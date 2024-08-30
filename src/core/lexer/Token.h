@@ -9,10 +9,17 @@ enum class TokenKind : char {
   Unk = -128,
   Identifier,
   Number,
+
+
   KwFn,
   KwVoid,
   KwNumber,
   KwReturn,
+
+  KwIf,
+  KwElse,
+  KwWhile,
+
   EqualEqual,
   AmpAmp,
   PipePipe,
@@ -43,8 +50,10 @@ const std::unordered_map<std::string_view, TokenKind> keywords = {
     {"fn", TokenKind::KwFn},
     {"void", TokenKind::KwVoid},
     {"return", TokenKind::KwReturn},
-    {"number", TokenKind::KwNumber}
-
+    {"number", TokenKind::KwNumber},
+    {"if",TokenKind::KwIf},
+    {"else",TokenKind::KwElse},
+    {"while",TokenKind::KwWhile},
 };
 
 } // namespace hlx
