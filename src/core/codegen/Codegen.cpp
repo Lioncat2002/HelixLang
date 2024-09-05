@@ -131,34 +131,34 @@ void hlx::Codegen::generateBlock(const hlx::ResolvedBlock &block) {
   }
 }
 
-llvm::Value *hlx::Codegen::generateIfStmt(const ResolvedIfStmt &stmt){
-    llvm::Function *function=getCurrentFunction();
+llvm::Value *hlx::Codegen::generateIfStmt(const ResolvedIfStmt &stmt) {
+  llvm::Function *function = getCurrentFunction();
 
-    auto *trueBB=llvm::BasicBlock::Create(context,"if.true");
-    auto exitBB=llvm::BasicBlock::Create(context,"if.exit");
+  auto *trueBB = llvm::BasicBlock::Create(context, "if.true");
+  auto exitBB = llvm::BasicBlock::Create(context, "if.exit");
 
-    llvm::BasicBlock *elseBB=exitBB;
-    if(stmt.falseBlock)
-      elseBB=llvm::BasicBlock::Create(context,"if.false");
+  llvm::BasicBlock *elseBB = exitBB;
+  if (stmt.falseBlock)
+    elseBB = llvm::BasicBlock::Create(context, "if.false");
 
-    llvm::Value *cond=generateExpr(*stmt.condition);
-    builder.CreateCondBr(doubleToBool(cond),trueBB,elseBB);
+  llvm::Value *cond = generateExpr(*stmt.condition);
+  builder.CreateCondBr(doubleToBool(cond), trueBB, elseBB);
 
-    trueBB->insertInto(function);
-    builder.SetInsertPoint(trueBB);
-    generateBlock(*stmt.trueBlock);
+  trueBB->insertInto(function);
+  builder.SetInsertPoint(trueBB);
+  generateBlock(*stmt.trueBlock);
+  builder.CreateBr(exitBB);
+
+  if (stmt.falseBlock) {
+    elseBB->insertInto(function);
+    builder.SetInsertPoint(elseBB);
+    generateBlock(*stmt.falseBlock);
     builder.CreateBr(exitBB);
+  }
 
-    if(stmt.falseBlock){
-      elseBB->insertInto(function);
-      builder.SetInsertPoint(elseBB);
-      generateBlock(*stmt.falseBlock);
-      builder.CreateBr(exitBB);
-    }
-
-    exitBB->insertInto(function);
-    builder.SetInsertPoint(exitBB);
-    return nullptr;
+  exitBB->insertInto(function);
+  builder.SetInsertPoint(exitBB);
+  return nullptr;
 }
 
 llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
@@ -244,6 +244,8 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
     return boolToDouble(builder.CreateFCmpOGT(lhs, rhs));
   if (op == TokenKind::EqualEqual)
     return boolToDouble(builder.CreateFCmpOEQ(lhs, rhs));
+  if (op == TokenKind::NotEqual)
+    return boolToDouble(builder.CreateFCmpONE(lhs, rhs));
   if (op == TokenKind::AmpAmp || op == TokenKind::PipePipe) {
     llvm::Function *function = getCurrentFunction();
     bool isOr = op == TokenKind::PipePipe;

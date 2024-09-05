@@ -59,6 +59,8 @@ std::string_view hlx::getOpStr(hlx::TokenKind op) {
     return "/";
   if (op == TokenKind::EqualEqual)
     return "==";
+  if(op==TokenKind::NotEqual)
+    return "!=";
   if (op == TokenKind::AmpAmp)
     return "&&";
   if (op == TokenKind::PipePipe)
