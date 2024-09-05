@@ -21,6 +21,7 @@ enum class TokenKind : char {
   KwWhile,
 
   EqualEqual,
+  NotEqual,
   AmpAmp,
   PipePipe,
   Eof = singleCharTokens[0],

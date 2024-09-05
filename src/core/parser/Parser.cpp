@@ -136,41 +136,41 @@ std::unique_ptr<hlx::ReturnStmt> hlx::Parser::parseReturnStmt() {
   return std::make_unique<ReturnStmt>(location, std::move(expr));
 }
 
-std::unique_ptr<hlx::IfStmt> hlx::Parser::parseIfStmt(){
-  SourceLocation location=nextToken.location;
-  eatNextToken();//eat if
+std::unique_ptr<hlx::IfStmt> hlx::Parser::parseIfStmt() {
+  SourceLocation location = nextToken.location;
+  eatNextToken(); // eat if
 
   varOrReturn(condition, parseExpr());
 
   matchOrReturn(TokenKind::Lbrace, "expected if body");
 
   varOrReturn(trueBlock, parseBlock());
-  if(nextToken.kind!=TokenKind::KwElse)
-    return std::make_unique<IfStmt>(location,std::move(condition),std::move(trueBlock));
+  if (nextToken.kind != TokenKind::KwElse)
+    return std::make_unique<IfStmt>(location, std::move(condition),
+                                    std::move(trueBlock));
 
-  eatNextToken();//eat else
+  eatNextToken(); // eat else
   std::unique_ptr<Block> falseBlock;
-  if(nextToken.kind==TokenKind::KwIf){
+  if (nextToken.kind == TokenKind::KwIf) {
     varOrReturn(elseIf, parseIfStmt());
-    SourceLocation loc=elseIf->location;
+    SourceLocation loc = elseIf->location;
     std::vector<std::unique_ptr<Stmt>> stmts;
     stmts.emplace_back(std::move(elseIf));
 
-    falseBlock=std::make_unique<Block>(loc,std::move(stmts));
-  }else{
+    falseBlock = std::make_unique<Block>(loc, std::move(stmts));
+  } else {
     matchOrReturn(TokenKind::Lbrace, "expected else body");
-    falseBlock=parseBlock();
+    falseBlock = parseBlock();
   }
-  if(!falseBlock)
+  if (!falseBlock)
     return nullptr;
 
-  return std::make_unique<IfStmt>(location,std::move(condition),
-                                  std::move(trueBlock),std::move(falseBlock));
-
+  return std::make_unique<IfStmt>(location, std::move(condition),
+                                  std::move(trueBlock), std::move(falseBlock));
 }
 
 std::unique_ptr<hlx::Stmt> hlx::Parser::parseStmt() {
-  if(nextToken.kind==TokenKind::KwIf){
+  if (nextToken.kind == TokenKind::KwIf) {
     return parseIfStmt();
   }
   if (nextToken.kind == TokenKind::KwReturn)
@@ -321,6 +321,7 @@ int hlx::Parser::getTokPrecedence(hlx::TokenKind tok) {
   case hlx::TokenKind::Lt:
     return 4;
   case hlx::TokenKind::EqualEqual:
+  case hlx::TokenKind::NotEqual:
     return 3;
   case hlx::TokenKind::AmpAmp:
     return 2;
