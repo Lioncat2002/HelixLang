@@ -313,12 +313,15 @@ int hlx::Parser::getTokPrecedence(hlx::TokenKind tok) {
   switch (tok) {
   case hlx::TokenKind::Asterisk:
   case hlx::TokenKind::Slash:
+  case hlx::TokenKind::Mod:
     return 6;
   case hlx::TokenKind::Plus:
   case hlx::TokenKind::Minus:
     return 5;
   case hlx::TokenKind::Gt:
   case hlx::TokenKind::Lt:
+  case hlx::TokenKind::MoreThanEql:
+  case hlx::TokenKind::LessThanEql:
     return 4;
   case hlx::TokenKind::EqualEqual:
   case hlx::TokenKind::NotEqual:

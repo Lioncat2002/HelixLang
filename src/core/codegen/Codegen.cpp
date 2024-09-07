@@ -238,6 +238,8 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
     return builder.CreateFMul(lhs, rhs);
   if (op == TokenKind::Slash)
     return builder.CreateFDiv(lhs, rhs);
+  if(op==TokenKind::Mod)
+    return builder.CreateFRem(lhs, rhs);
   if (op == TokenKind::Lt)
     return boolToDouble(builder.CreateFCmpOLT(lhs, rhs));
   if (op == TokenKind::Gt)
@@ -246,6 +248,10 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
     return boolToDouble(builder.CreateFCmpOEQ(lhs, rhs));
   if (op == TokenKind::NotEqual)
     return boolToDouble(builder.CreateFCmpONE(lhs, rhs));
+  if(op==TokenKind::MoreThanEql)
+    return boolToDouble(builder.CreateFCmpOGE(lhs, rhs));
+  if(op==TokenKind::LessThanEql)
+    return boolToDouble(builder.CreateFCmpOLE(lhs, rhs));
   if (op == TokenKind::AmpAmp || op == TokenKind::PipePipe) {
     llvm::Function *function = getCurrentFunction();
     bool isOr = op == TokenKind::PipePipe;
