@@ -161,6 +161,27 @@ llvm::Value *hlx::Codegen::generateIfStmt(const ResolvedIfStmt &stmt) {
   return nullptr;
 }
 
+llvm::Value *hlx::Codegen::generateWhileStmt(const ResolvedWhileStmt &stmt){
+  llvm::Function *function=getCurrentFunction();
+
+  auto *header=llvm::BasicBlock::Create(context,"while.cond",function);
+   auto *body=llvm::BasicBlock::Create(context,"while.body",function);
+   auto *exit=llvm::BasicBlock::Create(context,"while.exit",function);
+  
+  builder.CreateBr(header);
+
+  builder.SetInsertPoint(header);
+  llvm::Value *cond=generateExpr(*stmt.condition);
+  builder.CreateCondBr(doubleToBool(cond),body,exit);
+
+  builder.SetInsertPoint(body);
+  generateBlock(*stmt.body);
+  builder.CreateBr(header);
+
+  builder.SetInsertPoint(exit);
+  return nullptr;
+}
+
 llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
   if (auto *expr = dynamic_cast<const ResolvedExpr *>(&stmt)) {
     return generateExpr(*expr);
@@ -172,6 +193,10 @@ llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
 
   if (auto *ifStmt = dynamic_cast<const ResolvedIfStmt *>(&stmt)) {
     return generateIfStmt(*ifStmt);
+  }
+
+  if(auto *whileStmt=dynamic_cast<const ResolvedWhileStmt *>(&stmt)){
+    return generateWhileStmt(*whileStmt);
   }
 
   llvm_unreachable("unknown statement");
@@ -238,6 +263,8 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
     return builder.CreateFMul(lhs, rhs);
   if (op == TokenKind::Slash)
     return builder.CreateFDiv(lhs, rhs);
+  if(op==TokenKind::Mod)
+    return builder.CreateFRem(lhs, rhs);
   if (op == TokenKind::Lt)
     return boolToDouble(builder.CreateFCmpOLT(lhs, rhs));
   if (op == TokenKind::Gt)
@@ -246,6 +273,10 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
     return boolToDouble(builder.CreateFCmpOEQ(lhs, rhs));
   if (op == TokenKind::NotEqual)
     return boolToDouble(builder.CreateFCmpONE(lhs, rhs));
+  if(op==TokenKind::MoreThanEql)
+    return boolToDouble(builder.CreateFCmpOGE(lhs, rhs));
+  if(op==TokenKind::LessThanEql)
+    return boolToDouble(builder.CreateFCmpOLE(lhs, rhs));
   if (op == TokenKind::AmpAmp || op == TokenKind::PipePipe) {
     llvm::Function *function = getCurrentFunction();
     bool isOr = op == TokenKind::PipePipe;

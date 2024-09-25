@@ -12,7 +12,6 @@ fn printFib(count:number,n:number):void{
     }  
 }
 
-
 fn main(): void {
     printFib(10,10);
 }

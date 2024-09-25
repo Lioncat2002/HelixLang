@@ -1,0 +1,11 @@
+fn test(n: number): number {
+    while(n>0){
+        println(n);
+        test(n-1);
+        return -1;
+    }
+}
+
+fn main(): void {
+    test(12);
+}

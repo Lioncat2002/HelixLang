@@ -30,9 +30,18 @@ hlx::Token hlx::Lexer::getNextToken() {
   }
   SourceLocation tokenStartLocation{source->path, line, column};
 
+  if (currentChar == '>' && peekNextChar() == '=') {
+    eatNextChar();
+    return Token{tokenStartLocation, TokenKind::MoreThanEql};
+  }
+  if (currentChar == '<' && peekNextChar() == '=') {
+    eatNextChar();
+    return Token{tokenStartLocation, TokenKind::LessThanEql};
+  }
+
   if (currentChar == '!' && peekNextChar() == '=') {
     eatNextChar();
-    return Token { tokenStartLocation, TokenKind::NotEqual };
+    return Token{tokenStartLocation, TokenKind::NotEqual};
   }
 
   if (currentChar == '=' && peekNextChar() == '=') {

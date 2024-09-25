@@ -2,6 +2,7 @@
 #include "Ast.h"
 #include <cstddef>
 #include <memory>
+#include <utility>
 namespace hlx{
     
 struct ResolvedStmt:public Dumpable {
@@ -161,6 +162,20 @@ struct ResolvedIfStmt:public ResolvedStmt{
                   trueBlock(std::move(trueBlock)),
                   falseBlock(std::move(falseBlock)){}
   void dump(size_t level = 0) const override;
+};
+
+struct ResolvedWhileStmt:public ResolvedStmt{
+  std::unique_ptr<ResolvedExpr> condition;
+  std::unique_ptr<ResolvedBlock> body;
+
+  ResolvedWhileStmt(SourceLocation location,
+                    std::unique_ptr<ResolvedExpr> condition,
+                    std::unique_ptr<ResolvedBlock> body)
+                    :ResolvedStmt(location),
+                    condition(std::move(condition)),
+                    body(std::move(body)){}
+  
+  void dump(size_t level=0)const override;
 };
 
 }
