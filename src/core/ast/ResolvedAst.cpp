@@ -77,3 +77,10 @@ void hlx::ResolvedIfStmt::dump(size_t level) const{
     if(falseBlock)
         falseBlock->dump(level+1);
 }
+
+void hlx::ResolvedWhileStmt::dump(size_t level) const{
+    std::cerr<<indent(level)<<"ResolvedWhileStmt\n";
+
+    condition->dump(level+1);
+    body->dump(level+1);
+}

@@ -161,6 +161,27 @@ llvm::Value *hlx::Codegen::generateIfStmt(const ResolvedIfStmt &stmt) {
   return nullptr;
 }
 
+llvm::Value *hlx::Codegen::generateWhileStmt(const ResolvedWhileStmt &stmt){
+  llvm::Function *function=getCurrentFunction();
+
+  auto *header=llvm::BasicBlock::Create(context,"while.cond",function);
+   auto *body=llvm::BasicBlock::Create(context,"while.body",function);
+   auto *exit=llvm::BasicBlock::Create(context,"while.exit",function);
+  
+  builder.CreateBr(header);
+
+  builder.SetInsertPoint(header);
+  llvm::Value *cond=generateExpr(*stmt.condition);
+  builder.CreateCondBr(doubleToBool(cond),body,exit);
+
+  builder.SetInsertPoint(body);
+  generateBlock(*stmt.body);
+  builder.CreateBr(header);
+
+  builder.SetInsertPoint(exit);
+  return nullptr;
+}
+
 llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
   if (auto *expr = dynamic_cast<const ResolvedExpr *>(&stmt)) {
     return generateExpr(*expr);
@@ -172,6 +193,10 @@ llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
 
   if (auto *ifStmt = dynamic_cast<const ResolvedIfStmt *>(&stmt)) {
     return generateIfStmt(*ifStmt);
+  }
+
+  if(auto *whileStmt=dynamic_cast<const ResolvedWhileStmt *>(&stmt)){
+    return generateWhileStmt(*whileStmt);
   }
 
   llvm_unreachable("unknown statement");

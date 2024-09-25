@@ -95,8 +95,16 @@ struct IfStmt:public Stmt{
 
 struct WhileStmt:public Stmt{
   std::unique_ptr<Expr> condition;
-  std::unique_ptr<Block> block;
+  std::unique_ptr<Block> body;
 
+  WhileStmt(SourceLocation location,
+            std::unique_ptr<Expr> condition,
+            std::unique_ptr<Block> body)
+            : Stmt(location),
+              condition(std::move(condition)),
+              body(std::move(body)){}
+  
+  void dump(size_t level=0)const override;
   
 };
 

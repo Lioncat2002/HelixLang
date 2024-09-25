@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -38,10 +39,11 @@ hlx::Parser::parseSourceFile() {
 
   while (nextToken.kind != TokenKind::Eof) {
     if (nextToken.kind != TokenKind::KwFn) {
+      std::cerr<<(nextToken.kind==TokenKind::Rbrace);
       report(nextToken.location,
              "only function definitions are allowed on the top level");
       synchronize(TokenKind::KwFn);
-      continue;
+      break;
     }
 
     auto fn = parseFunctionDecl();
@@ -169,10 +171,24 @@ std::unique_ptr<hlx::IfStmt> hlx::Parser::parseIfStmt() {
                                   std::move(trueBlock), std::move(falseBlock));
 }
 
+std::unique_ptr<hlx::WhileStmt> hlx::Parser::parseWhileStmt(){
+  SourceLocation location=nextToken.location;
+  eatNextToken();
+
+  varOrReturn(cond, parseExpr());
+
+  matchOrReturn(TokenKind::Lbrace,"expected 'while' body");
+
+  varOrReturn(body, parseBlock());
+
+  return std::make_unique<WhileStmt>(location,std::move(cond),std::move(body));
+}
+
 std::unique_ptr<hlx::Stmt> hlx::Parser::parseStmt() {
-  if (nextToken.kind == TokenKind::KwIf) {
+  if (nextToken.kind == TokenKind::KwIf)
     return parseIfStmt();
-  }
+  if(nextToken.kind==TokenKind::KwWhile)
+    return parseWhileStmt();
   if (nextToken.kind == TokenKind::KwReturn)
     return parseReturnStmt();
   varOrReturn(expr, parseExpr());

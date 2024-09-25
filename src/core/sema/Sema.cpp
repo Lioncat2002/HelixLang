@@ -120,6 +120,18 @@ std::unique_ptr<ResolvedIfStmt> Sema::resolveIfStmt(const IfStmt &ifStmt){
     
 }
 
+std::unique_ptr<ResolvedWhileStmt> Sema::resolveWhileStmt(const WhileStmt &whileStmt){
+  
+  varOrReturn(condition, resolveExpr(*whileStmt.condition));
+  if(condition->type.kind!=Type::Kind::Number){
+    return report(condition->location, "expected number in condition");
+  }
+
+  varOrReturn(body, resolveBlock(*whileStmt.body));
+
+  return std::make_unique<ResolvedWhileStmt>(whileStmt.location,std::move(condition),std::move(body));
+}
+
 std::unique_ptr<ResolvedStmt> Sema::resolveStmt(const Stmt &stmt) {
   if (auto *expr = dynamic_cast<const Expr *>(&stmt))
     return resolveExpr(*expr);
@@ -127,6 +139,10 @@ std::unique_ptr<ResolvedStmt> Sema::resolveStmt(const Stmt &stmt) {
   if(auto *ifStmt=dynamic_cast<const IfStmt *>(&stmt)){
     return resolveIfStmt(*ifStmt);
   }
+  if(auto *whileStmt=dynamic_cast<const WhileStmt *>(&stmt)){
+    return resolveWhileStmt(*whileStmt);
+  }
+  
 
   auto *returnStmt = dynamic_cast<const ReturnStmt *>(&stmt);
   assert(returnStmt && "unknown statement");

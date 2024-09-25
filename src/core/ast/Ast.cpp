@@ -101,3 +101,10 @@ void hlx::IfStmt::dump(size_t level) const{
   if(falseBlock)
     falseBlock->dump(level+1);
 }
+
+void hlx::WhileStmt::dump(size_t level)const{
+  std::cerr<<indent(level)<<"WhileStmt\n";
+
+  condition->dump(level+1);
+  body->dump(level+1);
+}

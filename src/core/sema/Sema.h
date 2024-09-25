@@ -31,6 +31,7 @@ namespace hlx{
         std::unique_ptr<ResolvedUnaryOperator> resolveUnaryOperator(const UnaryOperator &unary);
         std::unique_ptr<ResolvedGroupingExpr> resolveGroupingExpr(const GroupingExpr &grouping);
         std::unique_ptr<ResolvedIfStmt> resolveIfStmt(const IfStmt &ifStmt);
+        std::unique_ptr<ResolvedWhileStmt> resolveWhileStmt(const WhileStmt &whileStmt);
         
         std::unique_ptr<ResolvedFunctionDecl> createBuiltinPrintln();
         std::pair<ResolvedDecl *,int> lookupDecl(const std::string id);
