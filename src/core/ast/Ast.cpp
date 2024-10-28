@@ -14,6 +14,21 @@ void hlx::FunctionDecl::dump(size_t level) const {
   body->dump(level + 1);
 }
 
+void hlx::VarDecl::dump(size_t level)const{
+   std::cerr << indent(level) << "VarDecl: " << identifier;
+  if (type)
+    std::cerr << ':' << type->name;
+  std::cerr << '\n';
+
+  if (initializer)
+    initializer->dump(level + 1);
+}
+
+void hlx::DeclStmt::dump(size_t level) const {
+  std::cerr << indent(level) << "DeclStmt:\n";
+  varDecl->dump(level + 1);
+}
+
 void hlx::Block::dump(size_t level) const {
   std::cerr << indent(level) << "Block\n";
 
