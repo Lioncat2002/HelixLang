@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <llvm-14/llvm/Support/ErrorHandling.h>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -140,6 +141,33 @@ struct FunctionDecl : public Decl {
       : Decl(location, std::move(identifier)), type(std::move(type)),
         body(std::move(body)), params(std::move(params)) {}
 
+  void dump(size_t level = 0) const override;
+};
+
+struct VarDecl:public Decl{
+  std::optional<Type> type;
+  std::unique_ptr<Expr> initializer;
+  bool isMutable;
+
+  VarDecl(SourceLocation location,
+          std::string identifer,
+          std::optional<Type> type,
+          bool isMutable,
+          std::unique_ptr<Expr> initializer=nullptr):
+          Decl(location,std::move(identifer)),
+          type(std::move(type)),
+          initializer(std::move(initializer)),
+          isMutable(isMutable){}
+  
+  void dump(size_t level = 0) const override;
+};
+
+struct DeclStmt:public Stmt{
+  std::unique_ptr<VarDecl> varDecl;
+
+  DeclStmt(SourceLocation location,std::unique_ptr<VarDecl> varDecl)
+  : Stmt(location),
+  varDecl(std::move(varDecl)){}
   void dump(size_t level = 0) const override;
 };
 

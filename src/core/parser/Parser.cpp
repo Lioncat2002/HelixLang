@@ -191,10 +191,29 @@ std::unique_ptr<hlx::Stmt> hlx::Parser::parseStmt() {
     return parseWhileStmt();
   if (nextToken.kind == TokenKind::KwReturn)
     return parseReturnStmt();
+  if(nextToken.kind==TokenKind::KwLet || nextToken.kind==TokenKind::KwVar)
+    return parseDeclStmt();
   varOrReturn(expr, parseExpr());
   matchOrReturn(TokenKind::Semi, "expected ';' at the end of expression");
   eatNextToken();
   return expr;
+}
+
+std::unique_ptr<hlx::DeclStmt> hlx::Parser::parseDeclStmt(){
+  Token tok=nextToken;
+  eatNextToken();
+
+  matchOrReturn(TokenKind::Identifier, "expected identifier");
+  varOrReturn(varDecl, parseVarDecl(tok.kind==TokenKind::KwLet));
+
+  matchOrReturn(TokenKind::Semi, "expected ';' after declaration");
+  eatNextToken();
+
+  return std::make_unique<DeclStmt>(tok.location,std::move(varDecl));
+}
+
+std::unique_ptr<hlx::VarDecl> hlx::Parser::parseVarDecl(bool isLet){
+  return nullptr;//TODO
 }
 
 std::unique_ptr<hlx::Expr> hlx::Parser::parsePrimary() {

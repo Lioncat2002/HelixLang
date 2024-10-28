@@ -27,6 +27,8 @@ namespace hlx{
         std::unique_ptr<Block> parseBlock();
         std::unique_ptr<Expr> parsePrimary();
         std::unique_ptr<Expr> parseExpr();
+        std::unique_ptr<DeclStmt> parseDeclStmt();
+        std::unique_ptr<VarDecl> parseVarDecl(bool isLet);
         std::unique_ptr<ParamDecl> parseParamDecl();
         std::unique_ptr<std::vector<std::unique_ptr<ParamDecl>>>
         parseParameterList();

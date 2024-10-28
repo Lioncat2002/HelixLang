@@ -4,7 +4,7 @@
 #include <unordered_map>
 namespace hlx {
 constexpr char singleCharTokens[] = {'\0', '(', ')', '{', '}', ':',
-                                     ';',  ',', '+', '-', '*', '/','<','>','!','%'};
+                                     ';',  ',', '+', '-', '*', '/','<','>','!','%','='};
 enum class TokenKind : char {
   Unk = -128,
   Identifier,
@@ -19,6 +19,8 @@ enum class TokenKind : char {
   KwIf,
   KwElse,
   KwWhile,
+  KwLet,//immutable
+  KwVar,//mutable
 
   EqualEqual,
   NotEqual,
@@ -43,7 +45,8 @@ enum class TokenKind : char {
   Lt=singleCharTokens[12],
   Gt=singleCharTokens[13],
   Excl=singleCharTokens[14],
-  Mod=singleCharTokens[15]
+  Mod=singleCharTokens[15],
+  Equal=singleCharTokens[16]
 };
 
 struct Token {
@@ -60,6 +63,8 @@ const std::unordered_map<std::string_view, TokenKind> keywords = {
     {"if",TokenKind::KwIf},
     {"else",TokenKind::KwElse},
     {"while",TokenKind::KwWhile},
+    {"let",TokenKind::KwLet},
+    {"var",TokenKind::KwVar},
 };
 
 } // namespace hlx

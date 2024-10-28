@@ -44,7 +44,10 @@ hlx::Token hlx::Lexer::getNextToken() {
     return Token{tokenStartLocation, TokenKind::NotEqual};
   }
 
-  if (currentChar == '=' && peekNextChar() == '=') {
+  if (currentChar == '=') {
+    if(peekNextChar()!='='){
+      return Token{tokenStartLocation,TokenKind::Equal};
+    }
     eatNextChar();
     return Token{tokenStartLocation, TokenKind::EqualEqual};
   }
