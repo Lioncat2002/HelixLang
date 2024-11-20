@@ -84,3 +84,15 @@ void hlx::ResolvedWhileStmt::dump(size_t level) const{
     condition->dump(level+1);
     body->dump(level+1);
 }
+
+void hlx::ResolvedVarDecl::dump(size_t level) const {
+  std::cerr <<indent(level) << "ResolvedVarDecl: @(" << this << ") "
+            << identifier << ':' << '\n';
+  if (initializer)
+    initializer->dump(level + 1);
+}
+
+void hlx::ResolvedDeclStmt::dump(size_t level) const{
+    std::cerr<<indent(level)<<"ResolvedDeclStmt:\n";
+    varDecl->dump(level+1);
+}

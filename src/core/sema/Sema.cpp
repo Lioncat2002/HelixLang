@@ -362,4 +362,19 @@ std::vector<std::unique_ptr<ResolvedFunctionDecl>> Sema::resolveAST() {
 
   return std::move(resolvedTree);
 }
+
+std::unique_ptr<ResolvedVarDecl> resolveVarDecl(const VarDecl &varDecl){
+  
+}
+
+std::unique_ptr<ResolvedDeclStmt> Sema::resolveDeclStmt(const DeclStmt &declStmt){
+  varOrReturn(resolvedVarDecl, resolveVarDecl(*declStmt.varDecl));
+
+  if(!insertDeclToCurrentScope(*resolvedVarDecl))
+    return nullptr;
+
+  return std::make_unique<ResolvedDeclStmt>(declStmt.location,std::move(resolvedVarDecl));
+}
+
+
 } // namespace hlx

@@ -34,6 +34,8 @@ struct ResolvedDecl {
   virtual void dump(size_t level = 0) const = 0;
 };
 
+
+
 struct ResolvedNumberLiteral : public ResolvedExpr {
   double value;
   ResolvedNumberLiteral(SourceLocation location, double value)
@@ -174,6 +176,34 @@ struct ResolvedWhileStmt:public ResolvedStmt{
                     :ResolvedStmt(location),
                     condition(std::move(condition)),
                     body(std::move(body)){}
+  
+  void dump(size_t level=0)const override;
+};
+
+struct ResolvedVarDecl:public ResolvedDecl{
+  std::unique_ptr<ResolvedExpr> initializer;
+  bool isMutable;
+
+  ResolvedVarDecl(SourceLocation location,
+                  std::string identifier,
+                  Type type,
+                  bool isMutable,
+                  std::unique_ptr<ResolvedExpr> initializer=nullptr)
+                  : ResolvedDecl(location,std::move(identifier),type),
+                  initializer(std::move(initializer)),
+                  isMutable(isMutable){}
+  
+  void dump(size_t level=0)const override;
+  std::string indent(size_t level) const { return std::string(level * 2, ' '); }
+};
+
+struct ResolvedDeclStmt:public ResolvedStmt{
+  std::unique_ptr<ResolvedVarDecl> varDecl;
+  
+  ResolvedDeclStmt(SourceLocation location,
+                    std::unique_ptr<ResolvedVarDecl> varDecl)
+                    : ResolvedStmt(location),
+                      varDecl(std::move(varDecl)){}
   
   void dump(size_t level=0)const override;
 };
