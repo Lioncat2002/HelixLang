@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -213,6 +214,7 @@ std::unique_ptr<hlx::DeclStmt> hlx::Parser::parseDeclStmt(){
 }
 
 std::unique_ptr<hlx::VarDecl> hlx::Parser::parseVarDecl(bool isLet){
+  
   SourceLocation location=nextToken.location;
 
   std::string identifier=*nextToken.value;

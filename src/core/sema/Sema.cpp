@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstddef>
+#include <iostream>
 #include <memory>
 #include <utility>
 
@@ -143,6 +144,10 @@ std::unique_ptr<ResolvedStmt> Sema::resolveStmt(const Stmt &stmt) {
     return resolveWhileStmt(*whileStmt);
   }
   
+  if (auto *declStmt = dynamic_cast<const DeclStmt *>(&stmt)){
+     return resolveDeclStmt(*declStmt);
+  }
+   
 
   auto *returnStmt = dynamic_cast<const ReturnStmt *>(&stmt);
   assert(returnStmt && "unknown statement");
@@ -318,6 +323,7 @@ Sema::resolveFunctionDeclaration(const FunctionDecl &function) {
 };
 
 std::vector<std::unique_ptr<ResolvedFunctionDecl>> Sema::resolveAST() {
+  std::cout<<"meow";
   ScopeRAII globalScope{this};
   std::vector<std::unique_ptr<ResolvedFunctionDecl>> resolvedTree;
 
@@ -363,13 +369,31 @@ std::vector<std::unique_ptr<ResolvedFunctionDecl>> Sema::resolveAST() {
   return std::move(resolvedTree);
 }
 
-std::unique_ptr<ResolvedVarDecl> resolveVarDecl(const VarDecl &varDecl){
+std::unique_ptr<ResolvedVarDecl> Sema::resolveVarDecl(const VarDecl &varDecl){
   
+  if(!varDecl.type&&!varDecl.initializer)
+    return report(varDecl.location, "uninitialized variable is expected to have a type specifier");
+  
+  std::unique_ptr<ResolvedExpr> resolvedInitializer=nullptr;
+  if(varDecl.initializer){
+    resolvedInitializer=resolveExpr(*varDecl.initializer);
+    if(!resolvedInitializer)
+      return nullptr;
+  }
+
+  Type resolvableType=varDecl.type.value_or(resolvedInitializer->type);
+  auto type=resolveType(resolvableType);
+  if(!type ||type->kind==Type::Kind::Void)
+    return report(varDecl.location,"variable '"+varDecl.identifier+"' has invalid '"+resolvableType.name+"' type");
+
+  if(resolvedInitializer->type.kind!=type->kind)
+      return report(resolvedInitializer->location, "initializer type mismatch");
+  return std::make_unique<ResolvedVarDecl>(varDecl.location,varDecl.identifier,*type,varDecl.isMutable,std::move(resolvedInitializer));
 }
 
 std::unique_ptr<ResolvedDeclStmt> Sema::resolveDeclStmt(const DeclStmt &declStmt){
   varOrReturn(resolvedVarDecl, resolveVarDecl(*declStmt.varDecl));
-
+  std::cout<<"meow";
   if(!insertDeclToCurrentScope(*resolvedVarDecl))
     return nullptr;
 
