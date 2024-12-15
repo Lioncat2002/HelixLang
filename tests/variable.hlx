@@ -1,4 +1,6 @@
 fn main(): void {
     let myvar=34.54;
     println(myvar);
+    myvar=20;
+    println(myvar);
 }

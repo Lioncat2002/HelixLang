@@ -11,7 +11,7 @@
 #include <vector>
 
 namespace hlx {
-  std::string_view getOpStr(TokenKind op);
+std::string_view getOpStr(TokenKind op);
 struct Decl : public Dumpable {
   SourceLocation location;
   std::string identifier;
@@ -30,8 +30,6 @@ struct Stmt : public Dumpable {
 struct Expr : public Stmt {
   Expr(SourceLocation location) : Stmt(location) {}
 };
-
-
 
 struct DeclRefExpr : public Expr {
   std::string identifier;
@@ -78,35 +76,29 @@ struct Block : public Dumpable {
   void dump(size_t level = 0) const override;
 };
 
-struct IfStmt:public Stmt{
+struct IfStmt : public Stmt {
   std::unique_ptr<Expr> condition;
   std::unique_ptr<Block> trueBlock;
   std::unique_ptr<Block> falseBlock;
 
-  IfStmt(SourceLocation location,
-        std::unique_ptr<Expr> condition,
-        std::unique_ptr<Block> trueBlock,
-        std::unique_ptr<Block> falseBlock=nullptr)
-        :Stmt(location),
-        condition(std::move(condition)),
-        trueBlock(std::move(trueBlock)),
-        falseBlock(std::move(falseBlock)){}
+  IfStmt(SourceLocation location, std::unique_ptr<Expr> condition,
+         std::unique_ptr<Block> trueBlock,
+         std::unique_ptr<Block> falseBlock = nullptr)
+      : Stmt(location), condition(std::move(condition)),
+        trueBlock(std::move(trueBlock)), falseBlock(std::move(falseBlock)) {}
   void dump(size_t level = 0) const override;
 };
 
-struct WhileStmt:public Stmt{
+struct WhileStmt : public Stmt {
   std::unique_ptr<Expr> condition;
   std::unique_ptr<Block> body;
 
-  WhileStmt(SourceLocation location,
-            std::unique_ptr<Expr> condition,
+  WhileStmt(SourceLocation location, std::unique_ptr<Expr> condition,
             std::unique_ptr<Block> body)
-            : Stmt(location),
-              condition(std::move(condition)),
-              body(std::move(body)){}
-  
-  void dump(size_t level=0)const override;
-  
+      : Stmt(location), condition(std::move(condition)), body(std::move(body)) {
+  }
+
+  void dump(size_t level = 0) const override;
 };
 
 struct Type {
@@ -144,30 +136,36 @@ struct FunctionDecl : public Decl {
   void dump(size_t level = 0) const override;
 };
 
-struct VarDecl:public Decl{
+struct VarDecl : public Decl {
   std::optional<Type> type;
   std::unique_ptr<Expr> initializer;
   bool isMutable;
 
-  VarDecl(SourceLocation location,
-          std::string identifer,
-          std::optional<Type> type,
-          bool isMutable,
-          std::unique_ptr<Expr> initializer=nullptr):
-          Decl(location,std::move(identifer)),
-          type(std::move(type)),
-          initializer(std::move(initializer)),
-          isMutable(isMutable){}
-  
+  VarDecl(SourceLocation location, std::string identifer,
+          std::optional<Type> type, bool isMutable,
+          std::unique_ptr<Expr> initializer = nullptr)
+      : Decl(location, std::move(identifer)), type(std::move(type)),
+        initializer(std::move(initializer)), isMutable(isMutable) {}
+
   void dump(size_t level = 0) const override;
 };
 
-struct DeclStmt:public Stmt{
+struct DeclStmt : public Stmt {
   std::unique_ptr<VarDecl> varDecl;
 
-  DeclStmt(SourceLocation location,std::unique_ptr<VarDecl> varDecl)
-  : Stmt(location),
-  varDecl(std::move(varDecl)){}
+  DeclStmt(SourceLocation location, std::unique_ptr<VarDecl> varDecl)
+      : Stmt(location), varDecl(std::move(varDecl)) {}
+  void dump(size_t level = 0) const override;
+};
+
+struct Assignment : public Stmt {
+  std::unique_ptr<DeclRefExpr> variable;
+  std::unique_ptr<Expr> expr;
+
+  Assignment(SourceLocation location, std::unique_ptr<DeclRefExpr> variable,
+             std::unique_ptr<Expr> expr)
+      : Stmt(location), variable(std::move(variable)), expr(std::move(expr)) {}
+
   void dump(size_t level = 0) const override;
 };
 
@@ -179,8 +177,6 @@ struct BinaryOperator : public Expr {
   BinaryOperator(SourceLocation location, std::unique_ptr<Expr> lhs,
                  std::unique_ptr<Expr> rhs, TokenKind op)
       : Expr(location), lhs(std::move(lhs)), rhs(std::move(rhs)), op(op) {}
-
-  
 
   void dump(size_t level = 0) const override;
 };
@@ -196,14 +192,13 @@ struct UnaryOperator : public Expr {
   void dump(size_t level = 0) const override;
 };
 
-struct GroupingExpr:public Expr{
+struct GroupingExpr : public Expr {
   std::unique_ptr<Expr> expr;
 
-  GroupingExpr(SourceLocation location,std::unique_ptr<Expr> expr)
-              : Expr(location),
-              expr(std::move(expr)){}
-  
-  void dump(size_t level=0)const override;
+  GroupingExpr(SourceLocation location, std::unique_ptr<Expr> expr)
+      : Expr(location), expr(std::move(expr)) {}
+
+  void dump(size_t level = 0) const override;
 };
 
 } // namespace hlx

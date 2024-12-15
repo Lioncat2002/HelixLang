@@ -1,6 +1,5 @@
 #include <cassert>
 #include <cstddef>
-#include <iostream>
 #include <memory>
 #include <utility>
 
@@ -121,6 +120,24 @@ std::unique_ptr<ResolvedIfStmt> Sema::resolveIfStmt(const IfStmt &ifStmt){
     
 }
 
+std::unique_ptr<ResolvedAssignment> Sema::resolveAssignment(const Assignment &assignment) {
+  varOrReturn(resolvedLHS, resolveDeclRefExpr(*assignment.variable));
+  varOrReturn(resolvedRHS, resolveExpr(*assignment.expr));
+
+  if (dynamic_cast<const ResolvedParamDecl *>(resolvedLHS->decl))
+    return report(resolvedLHS->location,
+                  "parameters are immutable and cannot be assigned");
+
+  auto *var = dynamic_cast<const ResolvedVarDecl *>(resolvedLHS->decl);
+  
+    if (resolvedRHS->type.kind != resolvedLHS->type.kind)
+      return report(resolvedRHS->location,
+                    "assigned value type doesn't match variable type");
+  
+  return std::make_unique<ResolvedAssignment>(
+        assignment.location, std::move(resolvedLHS), std::move(resolvedRHS));
+}
+
 std::unique_ptr<ResolvedWhileStmt> Sema::resolveWhileStmt(const WhileStmt &whileStmt){
   
   varOrReturn(condition, resolveExpr(*whileStmt.condition));
@@ -146,6 +163,10 @@ std::unique_ptr<ResolvedStmt> Sema::resolveStmt(const Stmt &stmt) {
   
   if (auto *declStmt = dynamic_cast<const DeclStmt *>(&stmt)){
      return resolveDeclStmt(*declStmt);
+  }
+
+  if(auto *assignment =dynamic_cast<const Assignment *>(&stmt)){
+    return resolveAssignment(*assignment);
   }
    
 
@@ -323,7 +344,6 @@ Sema::resolveFunctionDeclaration(const FunctionDecl &function) {
 };
 
 std::vector<std::unique_ptr<ResolvedFunctionDecl>> Sema::resolveAST() {
-  std::cout<<"meow";
   ScopeRAII globalScope{this};
   std::vector<std::unique_ptr<ResolvedFunctionDecl>> resolvedTree;
 
@@ -393,7 +413,6 @@ std::unique_ptr<ResolvedVarDecl> Sema::resolveVarDecl(const VarDecl &varDecl){
 
 std::unique_ptr<ResolvedDeclStmt> Sema::resolveDeclStmt(const DeclStmt &declStmt){
   varOrReturn(resolvedVarDecl, resolveVarDecl(*declStmt.varDecl));
-  std::cout<<"meow";
   if(!insertDeclToCurrentScope(*resolvedVarDecl))
     return nullptr;
 

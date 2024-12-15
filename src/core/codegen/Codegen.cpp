@@ -195,6 +195,10 @@ llvm::Value *hlx::Codegen::generateDeclStmt(const ResolvedDeclStmt &stmt){
   return nullptr;
 }
 
+llvm::Value *hlx::Codegen::generateAssignment(const ResolvedAssignment &stmt){
+  return builder.CreateStore(generateExpr(*stmt.expr), declarations[stmt.variable->decl]);
+}
+
 llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
   if (auto *expr = dynamic_cast<const ResolvedExpr *>(&stmt)) {
     return generateExpr(*expr);
@@ -216,6 +220,9 @@ llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
     return generateDeclStmt(*declStmt);
   }
 
+    if (auto *assignment = dynamic_cast<const ResolvedAssignment *>(&stmt)){
+      return generateAssignment(*assignment);
+}
   llvm_unreachable("unknown statement");
 }
 

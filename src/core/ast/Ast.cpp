@@ -14,8 +14,8 @@ void hlx::FunctionDecl::dump(size_t level) const {
   body->dump(level + 1);
 }
 
-void hlx::VarDecl::dump(size_t level)const{
-   std::cerr << indent(level) << "VarDecl: " << identifier;
+void hlx::VarDecl::dump(size_t level) const {
+  std::cerr << indent(level) << "VarDecl: " << identifier;
   if (type)
     std::cerr << ':' << type->name;
   std::cerr << '\n';
@@ -27,6 +27,12 @@ void hlx::VarDecl::dump(size_t level)const{
 void hlx::DeclStmt::dump(size_t level) const {
   std::cerr << indent(level) << "DeclStmt:\n";
   varDecl->dump(level + 1);
+}
+
+void hlx::Assignment::dump(size_t level) const {
+  std::cerr << indent(level) << "Assignment:\n";
+  variable->dump(level + 1);
+  expr->dump(level + 1);
 }
 
 void hlx::Block::dump(size_t level) const {
@@ -74,7 +80,7 @@ std::string_view hlx::getOpStr(hlx::TokenKind op) {
     return "/";
   if (op == TokenKind::EqualEqual)
     return "==";
-  if(op==TokenKind::NotEqual)
+  if (op == TokenKind::NotEqual)
     return "!=";
   if (op == TokenKind::AmpAmp)
     return "&&";
@@ -109,17 +115,17 @@ void hlx::GroupingExpr::dump(size_t level) const {
   expr->dump(level + 1);
 }
 
-void hlx::IfStmt::dump(size_t level) const{
-  std::cerr<<indent(level)<<"IfStmt\n";
-  condition->dump(level+1);
-  trueBlock->dump(level+1);
-  if(falseBlock)
-    falseBlock->dump(level+1);
+void hlx::IfStmt::dump(size_t level) const {
+  std::cerr << indent(level) << "IfStmt\n";
+  condition->dump(level + 1);
+  trueBlock->dump(level + 1);
+  if (falseBlock)
+    falseBlock->dump(level + 1);
 }
 
-void hlx::WhileStmt::dump(size_t level)const{
-  std::cerr<<indent(level)<<"WhileStmt\n";
+void hlx::WhileStmt::dump(size_t level) const {
+  std::cerr << indent(level) << "WhileStmt\n";
 
-  condition->dump(level+1);
-  body->dump(level+1);
+  condition->dump(level + 1);
+  body->dump(level + 1);
 }

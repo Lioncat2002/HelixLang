@@ -194,12 +194,45 @@ std::unique_ptr<hlx::Stmt> hlx::Parser::parseStmt() {
     return parseReturnStmt();
   if(nextToken.kind==TokenKind::KwLet || nextToken.kind==TokenKind::KwVar)
     return parseDeclStmt();
-  varOrReturn(expr, parseExpr());
-  matchOrReturn(TokenKind::Semi, "expected ';' at the end of expression");
-  eatNextToken();
-  return expr;
+  //varOrReturn(expr, parseExpr());
+  //matchOrReturn(TokenKind::Semi, "expected ';' at the end of expression");
+  //eatNextToken();
+  return parseAssignmentOrExpr();
 }
 
+std::unique_ptr<hlx::Stmt> hlx::Parser::parseAssignmentOrExpr(){
+  varOrReturn(lhs, parsePrefixExpr());
+
+  if(nextToken.kind!=TokenKind::Equal){
+    varOrReturn(expr, parseExprRHS(std::move(lhs), 0));
+
+    matchOrReturn(TokenKind::Semi, "expected ';' at the end of expression");
+    eatNextToken();
+
+    return expr;
+  }
+
+  auto *dre=dynamic_cast<DeclRefExpr *>(lhs.get());
+  if(!dre)
+    return report(lhs->location, "expected variable on LHS of assignment");
+
+  std::ignore=lhs.release();
+
+  varOrReturn(assignment, parseAssignmentRHS(std::unique_ptr<DeclRefExpr>(dre)));
+  matchOrReturn(TokenKind::Semi, "expected ';' at the end of assignment");
+  eatNextToken(); // eat ';'
+
+  return assignment;
+}
+
+std::unique_ptr<hlx::Assignment> hlx::Parser::parseAssignmentRHS(std::unique_ptr<DeclRefExpr> lhs){
+  SourceLocation location=nextToken.location;
+  eatNextToken();//eat =
+
+  varOrReturn(rhs, parseExpr());
+
+  return std::make_unique<Assignment>(location, std::move(lhs), std::move(rhs));
+}
 std::unique_ptr<hlx::DeclStmt> hlx::Parser::parseDeclStmt(){
   Token tok=nextToken;
   eatNextToken();

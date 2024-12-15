@@ -19,8 +19,7 @@ fn main(): void {
 - [x] Operator support
 - [x] Loop support
 - [x] Conditionals support
-- [ ] Fix issue with token parsing. Eg: `while_test` gets tokenized into 2 seperate tokens `while` and `test`
-- [ ] Variables support
+- [x] Variables support
 
 ## Requirements:
 - LLVM 14
