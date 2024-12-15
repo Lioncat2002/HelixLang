@@ -182,6 +182,19 @@ llvm::Value *hlx::Codegen::generateWhileStmt(const ResolvedWhileStmt &stmt){
   return nullptr;
 }
 
+llvm::Value *hlx::Codegen::generateDeclStmt(const ResolvedDeclStmt &stmt){
+   llvm::Function *function = getCurrentFunction();
+  const auto *decl = stmt.varDecl.get();
+
+  llvm::AllocaInst *var = allocateStackVariable(function, decl->identifier);
+
+  if (const auto &init = decl->initializer)
+    builder.CreateStore(generateExpr(*init), var);
+
+  declarations[decl] = var;
+  return nullptr;
+}
+
 llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
   if (auto *expr = dynamic_cast<const ResolvedExpr *>(&stmt)) {
     return generateExpr(*expr);
@@ -197,6 +210,10 @@ llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
 
   if(auto *whileStmt=dynamic_cast<const ResolvedWhileStmt *>(&stmt)){
     return generateWhileStmt(*whileStmt);
+  }
+
+  if(auto *declStmt=dynamic_cast<const ResolvedDeclStmt *>(&stmt)){
+    return generateDeclStmt(*declStmt);
   }
 
   llvm_unreachable("unknown statement");

@@ -23,6 +23,8 @@ CompilerOptions parseArguments(int argc, const char **argv) {
         options.output = ++idx >= argc ? "" : argv[idx];
       else if (arg == "-ast-dump")
         options.astDump = true;
+      else if (arg=="-res-dump")
+        options.resDump=true;
       else if (arg == "-llvm-dump")
         options.llvmDump = true;
       else if (arg == "-cfg-dump")

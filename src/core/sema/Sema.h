@@ -32,6 +32,9 @@ namespace hlx{
         std::unique_ptr<ResolvedGroupingExpr> resolveGroupingExpr(const GroupingExpr &grouping);
         std::unique_ptr<ResolvedIfStmt> resolveIfStmt(const IfStmt &ifStmt);
         std::unique_ptr<ResolvedWhileStmt> resolveWhileStmt(const WhileStmt &whileStmt);
+
+        std::unique_ptr<ResolvedDeclStmt> resolveDeclStmt(const DeclStmt &declStmt);
+        std::unique_ptr<ResolvedVarDecl> resolveVarDecl(const VarDecl &varDecl);
         
         std::unique_ptr<ResolvedFunctionDecl> createBuiltinPrintln();
         std::pair<ResolvedDecl *,int> lookupDecl(const std::string id);

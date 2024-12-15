@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -213,7 +214,29 @@ std::unique_ptr<hlx::DeclStmt> hlx::Parser::parseDeclStmt(){
 }
 
 std::unique_ptr<hlx::VarDecl> hlx::Parser::parseVarDecl(bool isLet){
-  return nullptr;//TODO
+  
+  SourceLocation location=nextToken.location;
+
+  std::string identifier=*nextToken.value;
+  eatNextToken();
+
+  std::optional<Type> type;
+
+  if(nextToken.kind==TokenKind::Colon){
+    eatNextToken();
+
+    type=parseType();
+    if(!type)
+      return nullptr;
+  }
+
+  if(nextToken.kind!=TokenKind::Equal)
+    return std::make_unique<VarDecl>(location,identifier,type,!isLet);
+  eatNextToken();
+
+  varOrReturn(initializer, parseExpr());
+
+  return std::make_unique<VarDecl>(location,identifier,type,!isLet,std::move(initializer));
 }
 
 std::unique_ptr<hlx::Expr> hlx::Parser::parsePrimary() {
