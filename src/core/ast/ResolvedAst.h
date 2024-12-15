@@ -208,4 +208,18 @@ struct ResolvedDeclStmt:public ResolvedStmt{
   void dump(size_t level=0)const override;
 };
 
+struct ResolvedAssignment:public ResolvedStmt{
+  std::unique_ptr<ResolvedDeclRefExpr> variable;
+  std::unique_ptr<ResolvedExpr> expr;
+
+  ResolvedAssignment(SourceLocation location,
+                     std::unique_ptr<ResolvedDeclRefExpr> variable,
+                     std::unique_ptr<ResolvedExpr> expr)
+      : ResolvedStmt(location),
+        variable(std::move(variable)),
+        expr(std::move(expr)) {}
+
+  void dump(size_t level = 0) const override;
+};
+
 }

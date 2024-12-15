@@ -96,3 +96,9 @@ void hlx::ResolvedDeclStmt::dump(size_t level) const{
     std::cerr<<indent(level)<<"ResolvedDeclStmt:\n";
     varDecl->dump(level+1);
 }
+
+void hlx::ResolvedAssignment::dump(size_t level) const {
+  std::cerr << indent(level) << "ResolvedAssignment:\n";
+  variable->dump(level + 1);
+  expr->dump(level + 1);
+}
