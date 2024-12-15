@@ -1,5 +1,4 @@
 fn test(n: number): number {
-    let meowkitty:number=23;
     while(n>0){
         println(n);
         test(n-1);
