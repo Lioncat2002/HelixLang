@@ -35,6 +35,13 @@ void hlx::Assignment::dump(size_t level) const {
   expr->dump(level + 1);
 }
 
+void hlx::ArrayExpr::dump(size_t level) const{
+  std::cerr << indent(level) << "Array:\n";
+
+  for (auto &&stmt : expressions)
+    stmt->dump(level + 1);
+}
+
 void hlx::Block::dump(size_t level) const {
   std::cerr << indent(level) << "Block\n";
 

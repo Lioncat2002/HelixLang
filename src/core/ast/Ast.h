@@ -39,6 +39,14 @@ struct DeclRefExpr : public Expr {
   std::string indent(size_t level) const { return std::string(level * 2, ' '); }
 };
 
+struct ArrayExpr:public Expr{
+  std::vector<std::unique_ptr<Expr>> expressions;
+  ArrayExpr(SourceLocation location,std::vector<std::unique_ptr<Expr>> expressions)
+  : Expr(location),expressions(std::move(expressions)){}
+  void dump(size_t level = 0) const override;
+  std::string indent(size_t level) const { return std::string(level * 2, ' '); }
+};
+
 struct CallExpr : public Expr {
   std::unique_ptr<DeclRefExpr> identifier;
   std::vector<std::unique_ptr<Expr>> arguments;
@@ -67,6 +75,8 @@ struct ReturnStmt : public Stmt {
 
   void dump(size_t level = 0) const override;
 };
+
+
 
 struct Block : public Dumpable {
   SourceLocation location;
