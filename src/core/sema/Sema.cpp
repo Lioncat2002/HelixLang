@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "../../utils/Utils.h"
 #include "Sema.h"
@@ -247,14 +248,31 @@ std::unique_ptr<ResolvedExpr> Sema::resolveExpr(const Expr &expr) {
   if (const auto *groupingExpr = dynamic_cast<const GroupingExpr *>(&expr))
     return resolveGroupingExpr(*groupingExpr);
 
+  if(const auto *arrayExpr=dynamic_cast<const ArrayExpr *>(&expr))
+    return resolveArrayExpr(*arrayExpr);
+
   if (const auto *binaryOperator = dynamic_cast<const BinaryOperator *>(&expr))
     return resolveBinaryOperator(*binaryOperator);
 
   if (const auto *unaryOperator = dynamic_cast<const UnaryOperator *>(&expr))
     return resolveUnaryOperator(*unaryOperator);
 
+
+
   assert(false && "unexpected expression");
   return nullptr;
+}
+
+std::unique_ptr<ResolvedArray> Sema::resolveArrayExpr(const ArrayExpr &array){
+  std::vector<std::unique_ptr<ResolvedExpr>> resolvedExpressions;
+
+  for(auto &&expr:array.expressions){
+    varOrReturn(resolvedExpr, resolveExpr(*expr));
+
+    resolvedExpressions.emplace_back(std::move(resolvedExpr));
+  }
+  
+  return std::make_unique<ResolvedArray>(array.location,std::move(resolvedExpressions));
 }
 
 std::unique_ptr<ResolvedGroupingExpr>

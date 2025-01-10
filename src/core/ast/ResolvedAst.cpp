@@ -102,3 +102,9 @@ void hlx::ResolvedAssignment::dump(size_t level) const {
   variable->dump(level + 1);
   expr->dump(level + 1);
 }
+
+void hlx::ResolvedArray::dump(size_t level) const{
+    std::cerr << indent(level) << "ResolvedAssignment:\n";
+    for (auto &&stmt : expressions)
+        stmt->dump(level + 1);
+}

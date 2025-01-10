@@ -20,6 +20,8 @@ namespace hlx{
         std::unique_ptr<ResolvedCallExpr> resolveCallExpr(const CallExpr &call);
         std::unique_ptr<ResolvedDeclRefExpr> resolveDeclRefExpr(const DeclRefExpr &declRefExpr,bool isCallee=false);
         std::unique_ptr<ResolvedExpr> resolveExpr(const Expr &expr);
+        std::unique_ptr<ResolvedArray> resolveArrayExpr(const ArrayExpr &array);
+
         std::unique_ptr<ResolvedBlock> resolveBlock(const Block &block);
         std::unique_ptr<ResolvedParamDecl> resolveParamDecl(const ParamDecl &param);
         std::unique_ptr<ResolvedStmt> resolveStmt(const Stmt &stmt);
