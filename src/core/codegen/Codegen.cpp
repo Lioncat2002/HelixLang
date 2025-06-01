@@ -1,4 +1,5 @@
 #include "Codegen.h"
+#include <cstddef>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -254,8 +255,35 @@ llvm::Value *hlx::Codegen::generateExpr(const ResolvedExpr &expr) {
 
   if (auto *grouping = dynamic_cast<const ResolvedGroupingExpr *>(&expr))
     return generateExpr(*grouping->expr);
-
+  if(auto *array=dynamic_cast<const ResolvedArray *>(&expr))
+    return generateArray(*array);
   llvm_unreachable("unexpected expression");
+}
+
+llvm::Value * hlx::Codegen::generateArray(const ResolvedArray &array){
+  size_t size =array.expressions.size();
+
+  llvm::ArrayType *arrayType=llvm::ArrayType::get(builder.getDoubleTy(), size);
+
+  llvm::AllocaInst *alloca=builder.CreateAlloca(arrayType,nullptr,"array");
+
+
+  for (size_t i=0; i<size; i++) {
+    llvm::Value *index[]={
+      builder.getInt32(0),//first index for array pointer
+      builder.getInt32(static_cast<int>(i))//Element index
+    };
+
+    llvm::Value *elementPtr=builder.CreateGEP(arrayType,alloca,index,"elem.ptr");
+
+    llvm::Value *value=generateExpr(*array.expressions[i]);
+
+    builder.CreateStore(value, elementPtr);
+  }
+
+  llvm::Value *ptr=builder.CreatePointerCast(alloca, builder.getDoubleTy()->getPointerTo(),"array.cast");
+
+  return ptr;
 }
 
 llvm::Value *

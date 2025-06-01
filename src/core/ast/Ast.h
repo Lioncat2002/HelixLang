@@ -112,12 +112,13 @@ struct WhileStmt : public Stmt {
 };
 
 struct Type {
-  enum class Kind { Void, KwNumber, Number, Custom };
+  enum class Kind { Void, KwNumber,Array, Number, Custom };
   Kind kind;
   std::string name;
 
   static Type builtinVoid() { return {Kind::Void, "void"}; }
   static Type builtinKwNumber() { return {Kind::KwNumber, "number"}; }
+  static Type builtinArray(){return {Kind::Array,"array"};}
   static Type builtinNumber() { return {Kind::Number, "number"}; }
   static Type custom(const std::string &name) { return {Kind::Custom, name}; }
 

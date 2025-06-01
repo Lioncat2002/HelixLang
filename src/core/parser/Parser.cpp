@@ -91,6 +91,13 @@ std::optional<hlx::Type> hlx::Parser::parseType() {
 
   if (kind == TokenKind::Number || kind == TokenKind::KwNumber) {
     eatNextToken();
+    if (nextToken.kind==TokenKind::LSBracket) {
+      eatNextToken();
+      if (nextToken.kind==TokenKind::RSBracket) {
+        eatNextToken();
+        return Type::builtinArray();
+      }
+    }
     return Type::builtinNumber();
   }
   if (kind == TokenKind::Identifier) {
