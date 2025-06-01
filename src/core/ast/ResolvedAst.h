@@ -227,7 +227,7 @@ struct ResolvedArray:public ResolvedExpr{
   std::vector<std::unique_ptr<ResolvedExpr>> expressions;
   ResolvedArray(SourceLocation location,
                     std::vector<std::unique_ptr<ResolvedExpr>> expressions)
-                    : ResolvedExpr(location,expressions[0]->type),//think of a beter way to get type??
+                    : ResolvedExpr(location,Type::builtinArray()),//think of a beter way to get type??
                       expressions(std::move(expressions)){}
   
   void dump(size_t level = 0) const override;

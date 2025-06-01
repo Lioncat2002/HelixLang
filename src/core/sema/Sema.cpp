@@ -425,7 +425,7 @@ std::unique_ptr<ResolvedVarDecl> Sema::resolveVarDecl(const VarDecl &varDecl){
     return report(varDecl.location,"variable '"+varDecl.identifier+"' has invalid '"+resolvableType.name+"' type");
 
   if(resolvedInitializer->type.kind!=type->kind)
-      return report(resolvedInitializer->location, "initializer type mismatch");
+      return report(resolvedInitializer->location, "initializer type mismatch "+Type::toString(resolvedInitializer->type));
   return std::make_unique<ResolvedVarDecl>(varDecl.location,varDecl.identifier,*type,varDecl.isMutable,std::move(resolvedInitializer));
 }
 

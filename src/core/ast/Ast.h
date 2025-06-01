@@ -122,6 +122,20 @@ struct Type {
   static Type builtinNumber() { return {Kind::Number, "number"}; }
   static Type custom(const std::string &name) { return {Kind::Custom, name}; }
 
+  public:
+  static std::string toString(const Type &type) {
+  switch (type.kind) {
+  case Type::Kind::Void:
+  case Type::Kind::KwNumber:
+  case Type::Kind::Number:
+  case Type::Kind::Custom:
+    return type.name;
+  case Type::Kind::Array:
+    return toString(type) + "[]";
+  }
+  return "<unknown>";
+}
+
 private:
   Type(Kind kind, std::string name) : kind(kind), name(std::move(name)){};
 };
