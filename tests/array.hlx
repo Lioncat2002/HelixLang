@@ -1,0 +1,4 @@
+fn main(): void {
+    let c:number=20;
+    let d:number[]=[1,2,3,c];
+}

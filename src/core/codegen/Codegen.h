@@ -43,7 +43,8 @@ namespace hlx {
       llvm::BasicBlock *retBB=nullptr;
       void generateFunctionDecl(const ResolvedFunctionDecl &functionDecl);
       void generateFunctionBody(const ResolvedFunctionDecl &functionDecl);
-      llvm::AllocaInst *allocateStackVariable(llvm::Function *function,const std::string_view identifier);
+      llvm::AllocaInst *allocateStackVariable(llvm::Function *function,llvm::Type *type,
+                                    const std::string_view identifier);
       void generateBlock(const ResolvedBlock &block);
       llvm::Value *generateStmt(const ResolvedStmt &stmt);
       llvm::Value *generateReturnStmt(const ResolvedReturnStmt &stmt);
@@ -52,6 +53,7 @@ namespace hlx {
       llvm::Value *generateWhileStmt(const ResolvedWhileStmt &stmt);
       llvm::Value *generateDeclStmt(const ResolvedDeclStmt &stmt);
       llvm::Value *generateAssignment(const ResolvedAssignment &stmt);
+      llvm::Value *generateArray(const ResolvedArray &stmt);
       llvm::Value *generateCallExpr(const ResolvedCallExpr &call);
       llvm::Value *generateUnaryOperator(const ResolvedUnaryOperator &unop);
       llvm::Value *generateBinaryOperator(const ResolvedBinaryOperator &binop);

@@ -1,5 +1,6 @@
 #include "Lexer.h"
 #include "Token.h"
+#include <utility>
 
 bool isSpace(char c) {
   return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' ||

@@ -1,4 +1,5 @@
 #include "Codegen.h"
+#include <cstddef>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -64,14 +65,17 @@ void hlx::Codegen::generateFunctionBody(
   auto *entryBB = llvm::BasicBlock::Create(context, "entry", function);
   builder.SetInsertPoint(entryBB);
 
-  // Note: llvm:Instruction has a protected destructor.
+  // Note: llvm::Instruction has a protected destructor.
   llvm::Value *undef = llvm::UndefValue::get(builder.getInt32Ty());
   allocaInsertPoint = new llvm::BitCastInst(undef, undef->getType(),
                                             "alloca.placeholder", entryBB);
 
   bool isVoid = functionDecl.type.kind == Type::Kind::Void;
+
+  // incase some other return type
   if (!isVoid)
-    retVal = allocateStackVariable(function, "retval");
+    retVal = allocateStackVariable(function,generateType(functionDecl.type), "retval");
+
   retBB = llvm::BasicBlock::Create(context, "return");
 
   int idx = 0;
@@ -79,7 +83,7 @@ void hlx::Codegen::generateFunctionBody(
     const auto *paramDecl = functionDecl.params[idx].get();
     arg.setName(paramDecl->identifier);
 
-    llvm::Value *var = allocateStackVariable(function, paramDecl->identifier);
+    llvm::Value *var = allocateStackVariable(function,generateType(paramDecl->type), paramDecl->identifier);
     builder.CreateStore(&arg, var);
 
     declarations[paramDecl] = var;
@@ -111,14 +115,19 @@ void hlx::Codegen::generateFunctionBody(
 llvm::Type *hlx::Codegen::generateType(hlx::Type type) {
   if (type.kind == Type::Kind::Number)
     return builder.getDoubleTy();
+  if (type.kind == Type::Kind::Array) {
+   // llvm::Type *elementTy = builder.getDoubleTy();
+    return builder.getDoubleTy()->getPointerTo();
+  }
+
   return builder.getVoidTy();
 }
 llvm::AllocaInst *
-hlx::Codegen::allocateStackVariable(llvm::Function *function,
+hlx::Codegen::allocateStackVariable(llvm::Function *function,llvm::Type *type,
                                     const std::string_view identifier) {
   llvm::IRBuilder<> tmpBuilder(context);
   tmpBuilder.SetInsertPoint(allocaInsertPoint);
-  return tmpBuilder.CreateAlloca(tmpBuilder.getDoubleTy(), nullptr, identifier);
+  return tmpBuilder.CreateAlloca(type, nullptr, identifier);
 }
 
 void hlx::Codegen::generateBlock(const hlx::ResolvedBlock &block) {
@@ -161,18 +170,18 @@ llvm::Value *hlx::Codegen::generateIfStmt(const ResolvedIfStmt &stmt) {
   return nullptr;
 }
 
-llvm::Value *hlx::Codegen::generateWhileStmt(const ResolvedWhileStmt &stmt){
-  llvm::Function *function=getCurrentFunction();
+llvm::Value *hlx::Codegen::generateWhileStmt(const ResolvedWhileStmt &stmt) {
+  llvm::Function *function = getCurrentFunction();
 
-  auto *header=llvm::BasicBlock::Create(context,"while.cond",function);
-   auto *body=llvm::BasicBlock::Create(context,"while.body",function);
-   auto *exit=llvm::BasicBlock::Create(context,"while.exit",function);
-  
+  auto *header = llvm::BasicBlock::Create(context, "while.cond", function);
+  auto *body = llvm::BasicBlock::Create(context, "while.body", function);
+  auto *exit = llvm::BasicBlock::Create(context, "while.exit", function);
+
   builder.CreateBr(header);
 
   builder.SetInsertPoint(header);
-  llvm::Value *cond=generateExpr(*stmt.condition);
-  builder.CreateCondBr(doubleToBool(cond),body,exit);
+  llvm::Value *cond = generateExpr(*stmt.condition);
+  builder.CreateCondBr(doubleToBool(cond), body, exit);
 
   builder.SetInsertPoint(body);
   generateBlock(*stmt.body);
@@ -182,11 +191,11 @@ llvm::Value *hlx::Codegen::generateWhileStmt(const ResolvedWhileStmt &stmt){
   return nullptr;
 }
 
-llvm::Value *hlx::Codegen::generateDeclStmt(const ResolvedDeclStmt &stmt){
-   llvm::Function *function = getCurrentFunction();
+llvm::Value *hlx::Codegen::generateDeclStmt(const ResolvedDeclStmt &stmt) {
+  llvm::Function *function = getCurrentFunction();
   const auto *decl = stmt.varDecl.get();
 
-  llvm::AllocaInst *var = allocateStackVariable(function, decl->identifier);
+  llvm::AllocaInst *var = allocateStackVariable(function,generateType(decl->type), decl->identifier);
 
   if (const auto &init = decl->initializer)
     builder.CreateStore(generateExpr(*init), var);
@@ -195,8 +204,9 @@ llvm::Value *hlx::Codegen::generateDeclStmt(const ResolvedDeclStmt &stmt){
   return nullptr;
 }
 
-llvm::Value *hlx::Codegen::generateAssignment(const ResolvedAssignment &stmt){
-  return builder.CreateStore(generateExpr(*stmt.expr), declarations[stmt.variable->decl]);
+llvm::Value *hlx::Codegen::generateAssignment(const ResolvedAssignment &stmt) {
+  return builder.CreateStore(generateExpr(*stmt.expr),
+                             declarations[stmt.variable->decl]);
 }
 
 llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
@@ -212,17 +222,17 @@ llvm::Value *hlx::Codegen::generateStmt(const hlx::ResolvedStmt &stmt) {
     return generateIfStmt(*ifStmt);
   }
 
-  if(auto *whileStmt=dynamic_cast<const ResolvedWhileStmt *>(&stmt)){
+  if (auto *whileStmt = dynamic_cast<const ResolvedWhileStmt *>(&stmt)) {
     return generateWhileStmt(*whileStmt);
   }
 
-  if(auto *declStmt=dynamic_cast<const ResolvedDeclStmt *>(&stmt)){
+  if (auto *declStmt = dynamic_cast<const ResolvedDeclStmt *>(&stmt)) {
     return generateDeclStmt(*declStmt);
   }
 
-    if (auto *assignment = dynamic_cast<const ResolvedAssignment *>(&stmt)){
-      return generateAssignment(*assignment);
-}
+  if (auto *assignment = dynamic_cast<const ResolvedAssignment *>(&stmt)) {
+    return generateAssignment(*assignment);
+  }
   llvm_unreachable("unknown statement");
 }
 
@@ -254,8 +264,37 @@ llvm::Value *hlx::Codegen::generateExpr(const ResolvedExpr &expr) {
 
   if (auto *grouping = dynamic_cast<const ResolvedGroupingExpr *>(&expr))
     return generateExpr(*grouping->expr);
-
+  if (auto *array = dynamic_cast<const ResolvedArray *>(&expr))
+    return generateArray(*array);
   llvm_unreachable("unexpected expression");
+}
+
+llvm::Value *hlx::Codegen::generateArray(const ResolvedArray &array) {
+  size_t size = array.expressions.size();
+
+  llvm::ArrayType *arrayType =
+      llvm::ArrayType::get(builder.getDoubleTy(), size);
+
+  llvm::AllocaInst *alloca = builder.CreateAlloca(arrayType, nullptr, "array");
+
+  for (size_t i = 0; i < size; i++) {
+    llvm::Value *index[] = {
+        builder.getInt32(0),                  // first index for array pointer
+        builder.getInt32(static_cast<int>(i)) // Element index
+    };
+
+    llvm::Value *elementPtr =
+        builder.CreateGEP(arrayType, alloca, index, "elem.ptr");
+
+    llvm::Value *value = generateExpr(*array.expressions[i]);
+
+    builder.CreateStore(value, elementPtr);
+  }
+
+  llvm::Value *ptr = builder.CreatePointerCast(
+      alloca, builder.getDoubleTy()->getPointerTo(), "array.cast");
+
+  return ptr;
 }
 
 llvm::Value *
@@ -287,7 +326,7 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
     return builder.CreateFMul(lhs, rhs);
   if (op == TokenKind::Slash)
     return builder.CreateFDiv(lhs, rhs);
-  if(op==TokenKind::Mod)
+  if (op == TokenKind::Mod)
     return builder.CreateFRem(lhs, rhs);
   if (op == TokenKind::Lt)
     return boolToDouble(builder.CreateFCmpOLT(lhs, rhs));
@@ -297,9 +336,9 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
     return boolToDouble(builder.CreateFCmpOEQ(lhs, rhs));
   if (op == TokenKind::NotEqual)
     return boolToDouble(builder.CreateFCmpONE(lhs, rhs));
-  if(op==TokenKind::MoreThanEql)
+  if (op == TokenKind::MoreThanEql)
     return boolToDouble(builder.CreateFCmpOGE(lhs, rhs));
-  if(op==TokenKind::LessThanEql)
+  if (op == TokenKind::LessThanEql)
     return boolToDouble(builder.CreateFCmpOLE(lhs, rhs));
   if (op == TokenKind::AmpAmp || op == TokenKind::PipePipe) {
     llvm::Function *function = getCurrentFunction();

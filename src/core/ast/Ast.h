@@ -39,6 +39,14 @@ struct DeclRefExpr : public Expr {
   std::string indent(size_t level) const { return std::string(level * 2, ' '); }
 };
 
+struct ArrayExpr:public Expr{
+  std::vector<std::unique_ptr<Expr>> expressions;
+  ArrayExpr(SourceLocation location,std::vector<std::unique_ptr<Expr>> expressions)
+  : Expr(location),expressions(std::move(expressions)){}
+  void dump(size_t level = 0) const override;
+  std::string indent(size_t level) const { return std::string(level * 2, ' '); }
+};
+
 struct CallExpr : public Expr {
   std::unique_ptr<DeclRefExpr> identifier;
   std::vector<std::unique_ptr<Expr>> arguments;
@@ -67,6 +75,8 @@ struct ReturnStmt : public Stmt {
 
   void dump(size_t level = 0) const override;
 };
+
+
 
 struct Block : public Dumpable {
   SourceLocation location;
@@ -102,14 +112,29 @@ struct WhileStmt : public Stmt {
 };
 
 struct Type {
-  enum class Kind { Void, KwNumber, Number, Custom };
+  enum class Kind { Void, KwNumber,Array, Number, Custom };
   Kind kind;
   std::string name;
 
   static Type builtinVoid() { return {Kind::Void, "void"}; }
   static Type builtinKwNumber() { return {Kind::KwNumber, "number"}; }
+  static Type builtinArray(){return {Kind::Array,"array"};}
   static Type builtinNumber() { return {Kind::Number, "number"}; }
   static Type custom(const std::string &name) { return {Kind::Custom, name}; }
+
+  public:
+  static std::string toString(const Type &type) {
+  switch (type.kind) {
+  case Type::Kind::Void:
+  case Type::Kind::KwNumber:
+  case Type::Kind::Number:
+  case Type::Kind::Custom:
+    return type.name;
+  case Type::Kind::Array:
+    return toString(type) + "[]";
+  }
+  return "<unknown>";
+}
 
 private:
   Type(Kind kind, std::string name) : kind(kind), name(std::move(name)){};

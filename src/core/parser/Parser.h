@@ -25,6 +25,7 @@ namespace hlx{
         std::unique_ptr<WhileStmt> parseWhileStmt();
         std::optional<Type> parseType();
         std::unique_ptr<Block> parseBlock();
+        std::unique_ptr<std::vector<std::unique_ptr<hlx::Expr>>> parseArray();
         std::unique_ptr<Expr> parsePrimary();
         std::unique_ptr<Expr> parseExpr();
         std::unique_ptr<DeclStmt> parseDeclStmt();

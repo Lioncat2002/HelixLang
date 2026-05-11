@@ -4,7 +4,8 @@
 #include <unordered_map>
 namespace hlx {
 constexpr char singleCharTokens[] = {'\0', '(', ')', '{', '}', ':',
-                                     ';',  ',', '+', '-', '*', '/','<','>','!','%','='};
+                                     ';',  ',', '+', '-', '*', '/',
+                                     '<','>','!','%','=','[',']'};
 enum class TokenKind : char {
   Unk = -128,
   Identifier,
@@ -46,7 +47,9 @@ enum class TokenKind : char {
   Gt=singleCharTokens[13],
   Excl=singleCharTokens[14],
   Mod=singleCharTokens[15],
-  Equal=singleCharTokens[16]
+  Equal=singleCharTokens[16],
+  LSBracket=singleCharTokens[17],
+  RSBracket=singleCharTokens[18],
 };
 
 struct Token {

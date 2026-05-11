@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
+#include <vector>
 namespace hlx{
     
 struct ResolvedStmt:public Dumpable {
@@ -219,6 +220,16 @@ struct ResolvedAssignment:public ResolvedStmt{
         variable(std::move(variable)),
         expr(std::move(expr)) {}
 
+  void dump(size_t level = 0) const override;
+};
+
+struct ResolvedArray:public ResolvedExpr{
+  std::vector<std::unique_ptr<ResolvedExpr>> expressions;
+  ResolvedArray(SourceLocation location,
+                    std::vector<std::unique_ptr<ResolvedExpr>> expressions)
+                    : ResolvedExpr(location,Type::builtinArray()),//think of a beter way to get type??
+                      expressions(std::move(expressions)){}
+  
   void dump(size_t level = 0) const override;
 };
 
