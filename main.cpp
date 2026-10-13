@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <llvm-14/llvm/IR/Module.h>
+#include <llvm/IR/Module.h>
 #include <llvm/Support/raw_ostream.h>
 #include <sstream>
 #include <system_error>
@@ -67,7 +67,7 @@ int main(int argc, const char **argv) {
 
     llvm::Module *llvmIR=codegen.generateIR();
     if(options.llvmDump){
-        llvmIR->dump();
+        llvmIR->print(llvm::outs(), nullptr);
         return 0;
     }
 

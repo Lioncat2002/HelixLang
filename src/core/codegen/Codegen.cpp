@@ -385,12 +385,12 @@ llvm::Value *hlx::Codegen::generateCallExpr(const ResolvedCallExpr &call) {
 void hlx::Codegen::generateBuiltinPrintBody(
     const ResolvedFunctionDecl &println) {
   auto *type = llvm::FunctionType::get(builder.getInt32Ty(),
-                                       {builder.getInt8PtrTy()}, true);
+                                       {builder.getPtrTy()}, true);
 
   auto *printf = llvm::Function::Create(type, llvm::Function::ExternalLinkage,
                                         "printf", _module);
 
-  auto *format = builder.CreateGlobalStringPtr("%.15g\n");
+  auto *format = builder.CreateGlobalString("%.15g\n");
 
   llvm::Value *param = builder.CreateLoad(
       builder.getDoubleTy(), declarations[println.params[0].get()]);

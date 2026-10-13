@@ -11,7 +11,7 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
-#include <llvm/Support/Host.h>
+#include <llvm/TargetParser/Host.h>
 #include <map>
 #include <memory>
 #include <string_view>
@@ -33,7 +33,7 @@ namespace hlx {
       builder(context),
       _module("<translation_unit>", context){
         _module.setSourceFileName(sourcePath);
-        _module.setTargetTriple(llvm::sys::getDefaultTargetTriple());
+        _module.setTargetTriple(llvm::Triple(llvm::sys::getDefaultTargetTriple()));
       }
 
       llvm::Module *generateIR();

@@ -28,4 +28,4 @@ add_executable(helixlang main.cpp
         src/utils/Driver.h
         src/utils/Driver.cpp
         )
-target_link_libraries(helixlang LLVM-14)
+target_link_libraries(helixlang LLVM)

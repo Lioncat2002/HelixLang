@@ -22,7 +22,14 @@ fn main(): void {
 - [x] Variables support
 
 ## Requirements:
-- LLVM 14
+- LLVM 23
 - Clang
 - C++ 17
 - Cmake 3.22 or greater
+
+## Build:
+```
+cmake -S . -B build \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DLLVM_DIR="$(llvm-config --cmakedir)" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
+```
