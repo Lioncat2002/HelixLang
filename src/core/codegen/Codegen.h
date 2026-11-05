@@ -65,6 +65,8 @@ namespace hlx {
       llvm::Value *doubleToBool(llvm::Value *v);
       llvm::Value *boolToDouble(llvm::Value *v);
 
+      llvm::Value *generatePrintln(const ResolvedCallExpr &call);
+
       void generateBuiltinPrintBody(const ResolvedFunctionDecl &println);
       void generateMainWrapper();
     };

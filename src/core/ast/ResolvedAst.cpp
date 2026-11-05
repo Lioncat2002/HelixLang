@@ -108,3 +108,7 @@ void hlx::ResolvedArray::dump(size_t level) const{
     for (auto &&stmt : expressions)
         stmt->dump(level + 1);
 }
+
+void hlx::ResolvedStringLiteral::dump(size_t level) const {
+    std::cerr << indent(level) << "ResolvedStringLiteral: \"" << value << "\"\n";
+}

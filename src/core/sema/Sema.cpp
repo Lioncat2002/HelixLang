@@ -7,7 +7,6 @@
 #include "../../utils/Utils.h"
 #include "Sema.h"
 
-
 namespace hlx {
 bool Sema::insertDeclToCurrentScope(ResolvedDecl &decl) {
   const auto &[foundDecl, scopeIdx] = lookupDecl(decl.identifier);
@@ -91,8 +90,15 @@ std::unique_ptr<ResolvedCallExpr> Sema::resolveCallExpr(const CallExpr &call) {
   for (auto &&arg : call.arguments) {
     varOrReturn(resolvedArg, resolveExpr(*arg));
 
-    if (resolvedArg->type.kind != resolvedFunctionDecl->params[idx]->type.kind)
+    if (resolvedFunctionDecl->identifier == "println") {
+      if (resolvedArg->type.kind != Type::Kind::Number &&
+          resolvedArg->type.kind != Type::Kind::String)
+        return report(resolvedArg->location,
+                      "println expects a number or string");
+    } else if (resolvedArg->type.kind !=
+               resolvedFunctionDecl->params[idx]->type.kind) {
       return report(resolvedArg->location, "unexpected type of argument");
+    }
 
     ++idx;
     resolvedArguments.emplace_back(std::move(resolvedArg));
@@ -102,26 +108,28 @@ std::unique_ptr<ResolvedCallExpr> Sema::resolveCallExpr(const CallExpr &call) {
       call.location, *resolvedFunctionDecl, std::move(resolvedArguments));
 }
 
-std::unique_ptr<ResolvedIfStmt> Sema::resolveIfStmt(const IfStmt &ifStmt){
-    varOrReturn(condition, resolveExpr(*ifStmt.condition));
+std::unique_ptr<ResolvedIfStmt> Sema::resolveIfStmt(const IfStmt &ifStmt) {
+  varOrReturn(condition, resolveExpr(*ifStmt.condition));
 
-    if(condition->type.kind!=Type::Kind::Number)
-      return report(condition->location, "expected number in condition");
+  if (condition->type.kind != Type::Kind::Number)
+    return report(condition->location, "expected number in condition");
 
-    varOrReturn(resolvedTrueBlock, resolveBlock(*ifStmt.trueBlock));
+  varOrReturn(resolvedTrueBlock, resolveBlock(*ifStmt.trueBlock));
 
-    std::unique_ptr<ResolvedBlock> resolvedFalseBlock;
-    if(ifStmt.falseBlock){
-      resolvedFalseBlock=resolveBlock(*ifStmt.falseBlock);
-      if(!resolvedFalseBlock)
-        return nullptr;
-    }
+  std::unique_ptr<ResolvedBlock> resolvedFalseBlock;
+  if (ifStmt.falseBlock) {
+    resolvedFalseBlock = resolveBlock(*ifStmt.falseBlock);
+    if (!resolvedFalseBlock)
+      return nullptr;
+  }
 
-    return std::make_unique<ResolvedIfStmt>(ifStmt.location,std::move(condition),std::move(resolvedTrueBlock),std::move(resolvedFalseBlock ));
-    
+  return std::make_unique<ResolvedIfStmt>(ifStmt.location, std::move(condition),
+                                          std::move(resolvedTrueBlock),
+                                          std::move(resolvedFalseBlock));
 }
 
-std::unique_ptr<ResolvedAssignment> Sema::resolveAssignment(const Assignment &assignment) {
+std::unique_ptr<ResolvedAssignment>
+Sema::resolveAssignment(const Assignment &assignment) {
   varOrReturn(resolvedLHS, resolveDeclRefExpr(*assignment.variable));
   varOrReturn(resolvedRHS, resolveExpr(*assignment.expr));
 
@@ -130,46 +138,47 @@ std::unique_ptr<ResolvedAssignment> Sema::resolveAssignment(const Assignment &as
                   "parameters are immutable and cannot be assigned");
 
   auto *var = dynamic_cast<const ResolvedVarDecl *>(resolvedLHS->decl);
-  
-    if (resolvedRHS->type.kind != resolvedLHS->type.kind)
-      return report(resolvedRHS->location,
-                    "assigned value type doesn't match variable type");
-  
+
+  if (resolvedRHS->type.kind != resolvedLHS->type.kind)
+    return report(resolvedRHS->location,
+                  "assigned value type doesn't match variable type");
+
   return std::make_unique<ResolvedAssignment>(
-        assignment.location, std::move(resolvedLHS), std::move(resolvedRHS));
+      assignment.location, std::move(resolvedLHS), std::move(resolvedRHS));
 }
 
-std::unique_ptr<ResolvedWhileStmt> Sema::resolveWhileStmt(const WhileStmt &whileStmt){
-  
+std::unique_ptr<ResolvedWhileStmt>
+Sema::resolveWhileStmt(const WhileStmt &whileStmt) {
+
   varOrReturn(condition, resolveExpr(*whileStmt.condition));
-  if(condition->type.kind!=Type::Kind::Number){
+  if (condition->type.kind != Type::Kind::Number) {
     return report(condition->location, "expected number in condition");
   }
 
   varOrReturn(body, resolveBlock(*whileStmt.body));
 
-  return std::make_unique<ResolvedWhileStmt>(whileStmt.location,std::move(condition),std::move(body));
+  return std::make_unique<ResolvedWhileStmt>(
+      whileStmt.location, std::move(condition), std::move(body));
 }
 
 std::unique_ptr<ResolvedStmt> Sema::resolveStmt(const Stmt &stmt) {
   if (auto *expr = dynamic_cast<const Expr *>(&stmt))
     return resolveExpr(*expr);
 
-  if(auto *ifStmt=dynamic_cast<const IfStmt *>(&stmt)){
+  if (auto *ifStmt = dynamic_cast<const IfStmt *>(&stmt)) {
     return resolveIfStmt(*ifStmt);
   }
-  if(auto *whileStmt=dynamic_cast<const WhileStmt *>(&stmt)){
+  if (auto *whileStmt = dynamic_cast<const WhileStmt *>(&stmt)) {
     return resolveWhileStmt(*whileStmt);
   }
-  
-  if (auto *declStmt = dynamic_cast<const DeclStmt *>(&stmt)){
-     return resolveDeclStmt(*declStmt);
+
+  if (auto *declStmt = dynamic_cast<const DeclStmt *>(&stmt)) {
+    return resolveDeclStmt(*declStmt);
   }
 
-  if(auto *assignment =dynamic_cast<const Assignment *>(&stmt)){
+  if (auto *assignment = dynamic_cast<const Assignment *>(&stmt)) {
     return resolveAssignment(*assignment);
   }
-   
 
   auto *returnStmt = dynamic_cast<const ReturnStmt *>(&stmt);
   assert(returnStmt && "unknown statement");
@@ -248,7 +257,7 @@ std::unique_ptr<ResolvedExpr> Sema::resolveExpr(const Expr &expr) {
   if (const auto *groupingExpr = dynamic_cast<const GroupingExpr *>(&expr))
     return resolveGroupingExpr(*groupingExpr);
 
-  if(const auto *arrayExpr=dynamic_cast<const ArrayExpr *>(&expr))
+  if (const auto *arrayExpr = dynamic_cast<const ArrayExpr *>(&expr))
     return resolveArrayExpr(*arrayExpr);
 
   if (const auto *binaryOperator = dynamic_cast<const BinaryOperator *>(&expr))
@@ -260,21 +269,21 @@ std::unique_ptr<ResolvedExpr> Sema::resolveExpr(const Expr &expr) {
   if (const auto *str = dynamic_cast<const StringLiteral *>(&expr))
     return std::make_unique<ResolvedStringLiteral>(str->location, str->value);
 
-
   assert(false && "unexpected expression");
   return nullptr;
 }
 
-std::unique_ptr<ResolvedArray> Sema::resolveArrayExpr(const ArrayExpr &array){
+std::unique_ptr<ResolvedArray> Sema::resolveArrayExpr(const ArrayExpr &array) {
   std::vector<std::unique_ptr<ResolvedExpr>> resolvedExpressions;
 
-  for(auto &&expr:array.expressions){
+  for (auto &&expr : array.expressions) {
     varOrReturn(resolvedExpr, resolveExpr(*expr));
 
     resolvedExpressions.emplace_back(std::move(resolvedExpr));
   }
-  
-  return std::make_unique<ResolvedArray>(array.location,std::move(resolvedExpressions));
+
+  return std::make_unique<ResolvedArray>(array.location,
+                                         std::move(resolvedExpressions));
 }
 
 std::unique_ptr<ResolvedGroupingExpr>
@@ -409,35 +418,44 @@ std::vector<std::unique_ptr<ResolvedFunctionDecl>> Sema::resolveAST() {
   return std::move(resolvedTree);
 }
 
-std::unique_ptr<ResolvedVarDecl> Sema::resolveVarDecl(const VarDecl &varDecl){
-  
-  if(!varDecl.type&&!varDecl.initializer)
-    return report(varDecl.location, "uninitialized variable is expected to have a type specifier");
-  
-  std::unique_ptr<ResolvedExpr> resolvedInitializer=nullptr;
-  if(varDecl.initializer){
-    resolvedInitializer=resolveExpr(*varDecl.initializer);
-    if(!resolvedInitializer)
+std::unique_ptr<ResolvedVarDecl> Sema::resolveVarDecl(const VarDecl &varDecl) {
+
+  if (!varDecl.type && !varDecl.initializer)
+    return report(
+        varDecl.location,
+        "uninitialized variable is expected to have a type specifier");
+
+  std::unique_ptr<ResolvedExpr> resolvedInitializer = nullptr;
+  if (varDecl.initializer) {
+    resolvedInitializer = resolveExpr(*varDecl.initializer);
+    if (!resolvedInitializer)
       return nullptr;
   }
 
-  Type resolvableType=varDecl.type.value_or(resolvedInitializer->type);
-  auto type=resolveType(resolvableType);
-  if(!type ||type->kind==Type::Kind::Void)
-    return report(varDecl.location,"variable '"+varDecl.identifier+"' has invalid '"+resolvableType.name+"' type");
+  Type resolvableType = varDecl.type.value_or(resolvedInitializer->type);
+  auto type = resolveType(resolvableType);
+  if (!type || type->kind == Type::Kind::Void)
+    return report(varDecl.location, "variable '" + varDecl.identifier +
+                                        "' has invalid '" +
+                                        resolvableType.name + "' type");
 
-  if(resolvedInitializer->type.kind!=type->kind)
-      return report(resolvedInitializer->location, "initializer type mismatch "+Type::toString(resolvedInitializer->type));
-  return std::make_unique<ResolvedVarDecl>(varDecl.location,varDecl.identifier,*type,varDecl.isMutable,std::move(resolvedInitializer));
+  if (resolvedInitializer->type.kind != type->kind)
+    return report(resolvedInitializer->location,
+                  "initializer type mismatch " +
+                      Type::toString(resolvedInitializer->type));
+  return std::make_unique<ResolvedVarDecl>(varDecl.location, varDecl.identifier,
+                                           *type, varDecl.isMutable,
+                                           std::move(resolvedInitializer));
 }
 
-std::unique_ptr<ResolvedDeclStmt> Sema::resolveDeclStmt(const DeclStmt &declStmt){
+std::unique_ptr<ResolvedDeclStmt>
+Sema::resolveDeclStmt(const DeclStmt &declStmt) {
   varOrReturn(resolvedVarDecl, resolveVarDecl(*declStmt.varDecl));
-  if(!insertDeclToCurrentScope(*resolvedVarDecl))
+  if (!insertDeclToCurrentScope(*resolvedVarDecl))
     return nullptr;
 
-  return std::make_unique<ResolvedDeclStmt>(declStmt.location,std::move(resolvedVarDecl));
+  return std::make_unique<ResolvedDeclStmt>(declStmt.location,
+                                            std::move(resolvedVarDecl));
 }
-
 
 } // namespace hlx

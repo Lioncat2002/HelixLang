@@ -74,7 +74,8 @@ void hlx::Codegen::generateFunctionBody(
 
   // incase some other return type
   if (!isVoid)
-    retVal = allocateStackVariable(function,generateType(functionDecl.type), "retval");
+    retVal = allocateStackVariable(function, generateType(functionDecl.type),
+                                   "retval");
 
   retBB = llvm::BasicBlock::Create(context, "return");
 
@@ -83,7 +84,8 @@ void hlx::Codegen::generateFunctionBody(
     const auto *paramDecl = functionDecl.params[idx].get();
     arg.setName(paramDecl->identifier);
 
-    llvm::Value *var = allocateStackVariable(function,generateType(paramDecl->type), paramDecl->identifier);
+    llvm::Value *var = allocateStackVariable(
+        function, generateType(paramDecl->type), paramDecl->identifier);
     builder.CreateStore(&arg, var);
 
     declarations[paramDecl] = var;
@@ -91,8 +93,9 @@ void hlx::Codegen::generateFunctionBody(
   }
 
   if (functionDecl.identifier == "println")
-    generateBuiltinPrintBody(functionDecl);
-  else
+  // generateBuiltinPrintBody(functionDecl);
+  {
+  } else
     generateBlock(*functionDecl.body);
 
   if (retBB->hasNPredecessorsOrMore(1)) {
@@ -116,14 +119,17 @@ llvm::Type *hlx::Codegen::generateType(hlx::Type type) {
   if (type.kind == Type::Kind::Number)
     return builder.getDoubleTy();
   if (type.kind == Type::Kind::Array) {
-   // llvm::Type *elementTy = builder.getDoubleTy();
+    // llvm::Type *elementTy = builder.getDoubleTy();
     return builder.getDoubleTy()->getPointerTo();
   }
+
+  if (type.kind == Type::Kind::String)
+    return builder.getPtrTy();
 
   return builder.getVoidTy();
 }
 llvm::AllocaInst *
-hlx::Codegen::allocateStackVariable(llvm::Function *function,llvm::Type *type,
+hlx::Codegen::allocateStackVariable(llvm::Function *function, llvm::Type *type,
                                     const std::string_view identifier) {
   llvm::IRBuilder<> tmpBuilder(context);
   tmpBuilder.SetInsertPoint(allocaInsertPoint);
@@ -195,7 +201,8 @@ llvm::Value *hlx::Codegen::generateDeclStmt(const ResolvedDeclStmt &stmt) {
   llvm::Function *function = getCurrentFunction();
   const auto *decl = stmt.varDecl.get();
 
-  llvm::AllocaInst *var = allocateStackVariable(function,generateType(decl->type), decl->identifier);
+  llvm::AllocaInst *var = allocateStackVariable(
+      function, generateType(decl->type), decl->identifier);
 
   if (const auto &init = decl->initializer)
     builder.CreateStore(generateExpr(*init), var);
@@ -248,6 +255,9 @@ llvm::Value *hlx::Codegen::generateExpr(const ResolvedExpr &expr) {
   if (auto *number = dynamic_cast<const ResolvedNumberLiteral *>(&expr)) {
     return llvm::ConstantFP::get(builder.getDoubleTy(), number->value);
   }
+
+  if (auto *str = dynamic_cast<const ResolvedStringLiteral *>(&expr))
+    return builder.CreateGlobalString(str->value);
 
   if (auto *dre = dynamic_cast<const ResolvedDeclRefExpr *>(&expr)) {
     return builder.CreateLoad(builder.getDoubleTy(), declarations[dre->decl]);
@@ -372,6 +382,10 @@ hlx::Codegen::generateBinaryOperator(const ResolvedBinaryOperator &binop) {
 }
 
 llvm::Value *hlx::Codegen::generateCallExpr(const ResolvedCallExpr &call) {
+
+  if (call.callee->identifier == "println")
+    return generatePrintln(call);
+
   llvm::Function *callee = _module.getFunction(call.callee->identifier);
 
   std::vector<llvm::Value *> args;
@@ -382,10 +396,22 @@ llvm::Value *hlx::Codegen::generateCallExpr(const ResolvedCallExpr &call) {
   return builder.CreateCall(callee, args);
 }
 
+llvm::Value *hlx::Codegen::generatePrintln(const ResolvedCallExpr &call) {
+  auto *type =
+      llvm::FunctionType::get(builder.getInt32Ty(), {builder.getPtrTy()}, true);
+  llvm::FunctionCallee printf = _module.getOrInsertFunction("printf", type);
+
+  const ResolvedExpr &arg = *call.arguments[0];
+  auto *format = builder.CreateGlobalString(
+      arg.type.kind == Type::Kind::String ? "%s\n" : "%.15g\n");
+
+  return builder.CreateCall(printf, {format, generateExpr(arg)});
+}
+
 void hlx::Codegen::generateBuiltinPrintBody(
     const ResolvedFunctionDecl &println) {
-  auto *type = llvm::FunctionType::get(builder.getInt32Ty(),
-                                       {builder.getPtrTy()}, true);
+  auto *type =
+      llvm::FunctionType::get(builder.getInt32Ty(), {builder.getPtrTy()}, true);
 
   auto *printf = llvm::Function::Create(type, llvm::Function::ExternalLinkage,
                                         "printf", _module);

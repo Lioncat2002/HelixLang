@@ -40,16 +40,16 @@ hlx::Parser::parseSourceFile() {
 
   while (nextToken.kind != TokenKind::Eof) {
 
-    if(nextToken.kind == TokenKind::KwImport){
+    if (nextToken.kind == TokenKind::KwImport) {
       if (!parseImport())
         synchronize(TokenKind::KwFn);
       continue;
     }
 
-
     if (nextToken.kind != TokenKind::KwFn) {
-      report(nextToken.location,
-             "only import and function definitions are allowed on the top level");
+      report(
+          nextToken.location,
+          "only import and function definitions are allowed on the top level");
       synchronize(TokenKind::KwFn);
       break;
     }
@@ -112,6 +112,13 @@ std::optional<hlx::Type> hlx::Parser::parseType() {
     eatNextToken();
     return t;
   }
+
+  if (kind == TokenKind::KwString) {
+    eatNextToken();
+    return Type::builtinString();
+  }
+  
+
   report(nextToken.location, "expected type specifier");
   return std::nullopt;
 }
@@ -330,7 +337,7 @@ std::unique_ptr<hlx::Expr> hlx::Parser::parsePrimary() {
     return literal;
   }
 
-  if (nextToken.kind == TokenKind::String){
+  if (nextToken.kind == TokenKind::String) {
     auto literal = std::make_unique<StringLiteral>(location, *nextToken.value);
     eatNextToken(); // eat StringLiteral
     return literal;
