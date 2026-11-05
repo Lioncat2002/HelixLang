@@ -6,10 +6,10 @@
 #include <llvm/Support/ErrorHandling.h>
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-
 
 namespace hlx {
 std::string_view getOpStr(TokenKind op);
@@ -40,10 +40,11 @@ struct DeclRefExpr : public Expr {
   std::string indent(size_t level) const { return std::string(level * 2, ' '); }
 };
 
-struct ArrayExpr:public Expr{
+struct ArrayExpr : public Expr {
   std::vector<std::unique_ptr<Expr>> expressions;
-  ArrayExpr(SourceLocation location,std::vector<std::unique_ptr<Expr>> expressions)
-  : Expr(location),expressions(std::move(expressions)){}
+  ArrayExpr(SourceLocation location,
+            std::vector<std::unique_ptr<Expr>> expressions)
+      : Expr(location), expressions(std::move(expressions)) {}
   void dump(size_t level = 0) const override;
   std::string indent(size_t level) const { return std::string(level * 2, ' '); }
 };
@@ -77,7 +78,18 @@ struct ReturnStmt : public Stmt {
   void dump(size_t level = 0) const override;
 };
 
+struct Import {
+  SourceLocation location;
+  std::string path;
+};
 
+struct StringLiteral : public Expr {
+  std::string value;
+  StringLiteral(SourceLocation location, std::string value)
+      : Expr(location), value(std::move(value)) {}
+
+  void dump(size_t level = 0) const override;
+};
 
 struct Block : public Dumpable {
   SourceLocation location;
@@ -113,32 +125,36 @@ struct WhileStmt : public Stmt {
 };
 
 struct Type {
-  enum class Kind { Void, KwNumber,Array, Number, Custom };
+  enum class Kind { Void, KwNumber, KwString,Array, Number, Custom, String };
   Kind kind;
   std::string name;
 
   static Type builtinVoid() { return {Kind::Void, "void"}; }
   static Type builtinKwNumber() { return {Kind::KwNumber, "number"}; }
-  static Type builtinArray(){return {Kind::Array,"array"};}
+  static Type builtinKwString() { return {Kind::KwString, "string"}; }
+  static Type builtinArray() { return {Kind::Array, "array"}; }
   static Type builtinNumber() { return {Kind::Number, "number"}; }
+  static Type builtinString() { return {Kind::String, "string"}; }
   static Type custom(const std::string &name) { return {Kind::Custom, name}; }
 
-  public:
+public:
   static std::string toString(const Type &type) {
-  switch (type.kind) {
-  case Type::Kind::Void:
-  case Type::Kind::KwNumber:
-  case Type::Kind::Number:
-  case Type::Kind::Custom:
-    return type.name;
-  case Type::Kind::Array:
-    return toString(type) + "[]";
+    switch (type.kind) {
+    case Type::Kind::Void:
+    case Type::Kind::KwNumber:
+    case Type::Kind::String:
+    case Type::Kind::KwString:
+    case Type::Kind::Number:
+    case Type::Kind::Custom:
+      return type.name;
+    case Type::Kind::Array:
+      return toString(type) + "[]";
+    }
+    return "<unknown>";
   }
-  return "<unknown>";
-}
 
 private:
-  Type(Kind kind, std::string name) : kind(kind), name(std::move(name)){};
+  Type(Kind kind, std::string name) : kind(kind), name(std::move(name)) {};
 };
 
 struct ParamDecl : public Decl {

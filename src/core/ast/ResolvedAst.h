@@ -46,6 +46,15 @@ struct ResolvedNumberLiteral : public ResolvedExpr {
   std::string indent(size_t level) const { return std::string(level * 2, ' '); }
 };
 
+struct ResolvedStringLiteral : public ResolvedExpr {
+  std::string value;
+  ResolvedStringLiteral(SourceLocation location, std::string value)
+      : ResolvedExpr(location, Type::builtinString()), value(value) {}
+
+  void dump(size_t level = 0) const override;
+  std::string indent(size_t level) const { return std::string(level * 2, ' '); }
+};
+
 struct ResolvedDeclRefExpr : public ResolvedExpr {
   const ResolvedDecl *decl;
   ResolvedDeclRefExpr(SourceLocation location, ResolvedDecl &decl)

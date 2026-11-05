@@ -77,6 +77,18 @@ hlx::Token hlx::Lexer::getNextToken() {
       return Token{tokenStartLocation, static_cast<TokenKind>(c)};
   }
 
+  if(currentChar == '"'){
+    std::string value;
+    while (peekNextChar()!='"') {
+      if (peekNextChar() == '\0')
+        return Token{tokenStartLocation, TokenKind::Unk}; // unterminated
+      char c = eatNextChar();
+      value += c;
+    }
+    eatNextChar(); // closing quote
+    return Token{tokenStartLocation, TokenKind::String, std::move(value)};
+  }
+
   if (isAlpha(currentChar)) {
     std::string value{currentChar};
     while (isAlnum(peekNextChar()))

@@ -59,6 +59,10 @@ void hlx::NumberLiteral::dump(size_t level) const {
   std::cerr << indent(level) << "NumberLiteral: '" << value << "'\n";
 }
 
+void hlx::StringLiteral::dump(size_t level) const {
+  std::cerr << indent(level) << "StringLiteral: '" << value << "'\n";
+}
+
 void hlx::DeclRefExpr::dump(size_t level) const {
   std::cerr << indent(level) << "DeclRefExpr: '" << identifier << "'\n";
 }

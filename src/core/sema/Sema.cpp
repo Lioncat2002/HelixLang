@@ -257,6 +257,8 @@ std::unique_ptr<ResolvedExpr> Sema::resolveExpr(const Expr &expr) {
   if (const auto *unaryOperator = dynamic_cast<const UnaryOperator *>(&expr))
     return resolveUnaryOperator(*unaryOperator);
 
+  if (const auto *str = dynamic_cast<const StringLiteral *>(&expr))
+    return std::make_unique<ResolvedStringLiteral>(str->location, str->value);
 
 
   assert(false && "unexpected expression");

@@ -39,10 +39,17 @@ hlx::Parser::parseSourceFile() {
   std::vector<std::unique_ptr<FunctionDecl>> functions;
 
   while (nextToken.kind != TokenKind::Eof) {
+
+    if(nextToken.kind == TokenKind::KwImport){
+      if (!parseImport())
+        synchronize(TokenKind::KwFn);
+      continue;
+    }
+
+
     if (nextToken.kind != TokenKind::KwFn) {
-      std::cerr << (nextToken.kind == TokenKind::Rbrace);
       report(nextToken.location,
-             "only function definitions are allowed on the top level");
+             "only import and function definitions are allowed on the top level");
       synchronize(TokenKind::KwFn);
       break;
     }
@@ -91,9 +98,9 @@ std::optional<hlx::Type> hlx::Parser::parseType() {
 
   if (kind == TokenKind::Number || kind == TokenKind::KwNumber) {
     eatNextToken();
-    if (nextToken.kind==TokenKind::LSBracket) {
+    if (nextToken.kind == TokenKind::LSBracket) {
       eatNextToken();
-      if (nextToken.kind==TokenKind::RSBracket) {
+      if (nextToken.kind == TokenKind::RSBracket) {
         eatNextToken();
         return Type::builtinArray();
       }
@@ -281,7 +288,8 @@ std::unique_ptr<hlx::VarDecl> hlx::Parser::parseVarDecl(bool isLet) {
                                    std::move(initializer));
 }
 
-std::unique_ptr<std::vector<std::unique_ptr<hlx::Expr>>> hlx::Parser::parseArray() {
+std::unique_ptr<std::vector<std::unique_ptr<hlx::Expr>>>
+hlx::Parser::parseArray() {
   SourceLocation location = nextToken.location;
   std::vector<std::unique_ptr<Expr>> expressions;
   matchOrReturn(TokenKind::LSBracket, "expected '['");
@@ -298,7 +306,8 @@ std::unique_ptr<std::vector<std::unique_ptr<hlx::Expr>>> hlx::Parser::parseArray
   }
   matchOrReturn(TokenKind::RSBracket, "expected ']'");
   eatNextToken(); // consume ']'
-  return std::make_unique<std::vector<std::unique_ptr<Expr>>>(std::move(expressions));
+  return std::make_unique<std::vector<std::unique_ptr<Expr>>>(
+      std::move(expressions));
 }
 
 std::unique_ptr<hlx::Expr> hlx::Parser::parsePrimary() {
@@ -321,9 +330,15 @@ std::unique_ptr<hlx::Expr> hlx::Parser::parsePrimary() {
     return literal;
   }
 
-  if(nextToken.kind==TokenKind::LSBracket){
+  if (nextToken.kind == TokenKind::String){
+    auto literal = std::make_unique<StringLiteral>(location, *nextToken.value);
+    eatNextToken(); // eat StringLiteral
+    return literal;
+  }
+
+  if (nextToken.kind == TokenKind::LSBracket) {
     varOrReturn(expressions, parseArray());
-    return std::make_unique<ArrayExpr>(location,std::move(*expressions));
+    return std::make_unique<ArrayExpr>(location, std::move(*expressions));
   }
 
   if (nextToken.kind == TokenKind::Identifier) {
@@ -471,4 +486,25 @@ std::unique_ptr<hlx::Expr> hlx::Parser::parsePrefixExpr() {
 
   return std::make_unique<UnaryOperator>(tok.location, std::move(rhs),
                                          tok.kind);
+}
+
+bool hlx::Parser::parseImport() {
+  SourceLocation location = nextToken.location;
+  eatNextToken();
+
+  if (nextToken.kind != TokenKind::String) {
+    report(nextToken.location, "expected a file path string after 'import'");
+    return false;
+  }
+  std::string path = *nextToken.value;
+  eatNextToken();
+
+  if (nextToken.kind != TokenKind::Semi) {
+    report(nextToken.location, "expected ';' after import");
+    return false;
+  }
+  eatNextToken();
+
+  imports.push_back({location, std::move(path)});
+  return true;
 }

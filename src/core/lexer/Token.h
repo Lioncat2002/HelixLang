@@ -3,25 +3,27 @@
 #include <optional>
 #include <unordered_map>
 namespace hlx {
-constexpr char singleCharTokens[] = {'\0', '(', ')', '{', '}', ':',
-                                     ';',  ',', '+', '-', '*', '/',
-                                     '<','>','!','%','=','[',']'};
+constexpr char singleCharTokens[] = {'\0', '(', ')', '{', '}', ':', ';',
+                                     ',',  '+', '-', '*', '/', '<', '>',
+                                     '!',  '%', '=', '[', ']'};
 enum class TokenKind : char {
   Unk = -128,
   Identifier,
   Number,
-
+  String,
 
   KwFn,
   KwVoid,
   KwNumber,
   KwReturn,
+  KwImport,
 
   KwIf,
   KwElse,
   KwWhile,
-  KwLet,//immutable
-  KwVar,//mutable
+  KwLet, // immutable
+  KwVar, // mutable
+  KwString,
 
   EqualEqual,
   NotEqual,
@@ -43,13 +45,13 @@ enum class TokenKind : char {
   Minus = singleCharTokens[9],
   Asterisk = singleCharTokens[10],
   Slash = singleCharTokens[11],
-  Lt=singleCharTokens[12],
-  Gt=singleCharTokens[13],
-  Excl=singleCharTokens[14],
-  Mod=singleCharTokens[15],
-  Equal=singleCharTokens[16],
-  LSBracket=singleCharTokens[17],
-  RSBracket=singleCharTokens[18],
+  Lt = singleCharTokens[12],
+  Gt = singleCharTokens[13],
+  Excl = singleCharTokens[14],
+  Mod = singleCharTokens[15],
+  Equal = singleCharTokens[16],
+  LSBracket = singleCharTokens[17],
+  RSBracket = singleCharTokens[18],
 };
 
 struct Token {
@@ -59,15 +61,11 @@ struct Token {
 };
 
 const std::unordered_map<std::string_view, TokenKind> keywords = {
-    {"fn", TokenKind::KwFn},
-    {"void", TokenKind::KwVoid},
-    {"return", TokenKind::KwReturn},
-    {"number", TokenKind::KwNumber},
-    {"if",TokenKind::KwIf},
-    {"else",TokenKind::KwElse},
-    {"while",TokenKind::KwWhile},
-    {"let",TokenKind::KwLet},
-    {"var",TokenKind::KwVar},
-};
+    {"fn", TokenKind::KwFn},         {"void", TokenKind::KwVoid},
+    {"return", TokenKind::KwReturn}, {"number", TokenKind::KwNumber},
+    {"if", TokenKind::KwIf},         {"else", TokenKind::KwElse},
+    {"while", TokenKind::KwWhile},   {"let", TokenKind::KwLet},
+    {"var", TokenKind::KwVar},       {"string", TokenKind::KwString},
+    {"import", TokenKind::KwImport}};
 
 } // namespace hlx
