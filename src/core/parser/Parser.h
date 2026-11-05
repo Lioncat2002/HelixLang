@@ -33,6 +33,7 @@ public:
   std::unique_ptr<VarDecl> parseVarDecl(bool isLet);
   std::unique_ptr<ParamDecl> parseParamDecl();
   std::unique_ptr<Stmt> parseAssignmentOrExpr();
+  std::unique_ptr<FunctionDecl> parseExternDecl();
   std::unique_ptr<Assignment>
   parseAssignmentRHS(std::unique_ptr<DeclRefExpr> lhs);
   std::unique_ptr<std::vector<std::unique_ptr<ParamDecl>>> parseParameterList();

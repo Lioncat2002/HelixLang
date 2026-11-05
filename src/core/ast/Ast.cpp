@@ -10,8 +10,8 @@ void hlx::FunctionDecl::dump(size_t level) const {
 
   for (auto &&param : params)
     param->dump(level + 1);
-
-  body->dump(level + 1);
+  if(body)
+    body->dump(level + 1);
 }
 
 void hlx::VarDecl::dump(size_t level) const {
@@ -103,6 +103,12 @@ std::string_view hlx::getOpStr(hlx::TokenKind op) {
     return ">";
   if (op == TokenKind::Excl)
     return "!";
+  if(op == TokenKind::Mod)
+    return "%";
+  if(op == TokenKind::LessThanEql)
+    return "<=";
+  if(op == TokenKind::MoreThanEql)
+    return ">=";
 
   llvm_unreachable("unexpected operator");
 }

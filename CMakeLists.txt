@@ -27,5 +27,7 @@ add_executable(helixlang main.cpp
         src/core/codegen/Codegen.cpp
         src/utils/Driver.h
         src/utils/Driver.cpp
+        src/utils/Loader.h
+        src/utils/Loader.cpp
         )
 target_link_libraries(helixlang LLVM)

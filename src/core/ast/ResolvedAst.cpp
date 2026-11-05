@@ -37,8 +37,8 @@ void hlx::ResolvedFunctionDecl::dump(size_t level) const {
 
     for (auto &&param : params)
         param->dump(level + 1);
-
-    body->dump(level + 1);
+    if(body)
+        body->dump(level + 1);
 }
 
 void hlx::ResolvedReturnStmt::dump(size_t level) const {

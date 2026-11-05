@@ -354,6 +354,8 @@ Sema::resolveFunctionDeclaration(const FunctionDecl &function) {
     if (!function.params.empty())
       return report(function.location,
                     "'main' function is expected to take no arguments");
+    if (!function.body)
+      return report(function.location, "'main' cannot be extern");
   }
 
   ScopeRAII paramScope{this};
@@ -399,6 +401,10 @@ std::vector<std::unique_ptr<ResolvedFunctionDecl>> Sema::resolveAST() {
   for (size_t i = 1; i < resolvedTree.size(); ++i) {
     ScopeRAII scope{this};
     currentFunction = resolvedTree[i].get();
+
+    if (!ast[i - 1]->body) {
+      continue;
+    }
 
     for (auto &&param : currentFunction->params)
       insertDeclToCurrentScope(*param);

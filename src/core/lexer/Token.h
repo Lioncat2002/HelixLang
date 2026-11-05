@@ -17,6 +17,7 @@ enum class TokenKind : char {
   KwNumber,
   KwReturn,
   KwImport,
+  KwExtern,
 
   KwIf,
   KwElse,
@@ -66,6 +67,6 @@ const std::unordered_map<std::string_view, TokenKind> keywords = {
     {"if", TokenKind::KwIf},         {"else", TokenKind::KwElse},
     {"while", TokenKind::KwWhile},   {"let", TokenKind::KwLet},
     {"var", TokenKind::KwVar},       {"string", TokenKind::KwString},
-    {"import", TokenKind::KwImport}};
+    {"import", TokenKind::KwImport}, {"extern", TokenKind::KwExtern}};
 
 } // namespace hlx

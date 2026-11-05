@@ -46,7 +46,8 @@ hlx::Parser::parseSourceFile() {
       continue;
     }
 
-    if (nextToken.kind != TokenKind::KwFn) {
+    bool isExtern = nextToken.kind == TokenKind::KwExtern;
+    if (nextToken.kind != TokenKind::KwFn && !isExtern) {
       report(
           nextToken.location,
           "only import and function definitions are allowed on the top level");
@@ -54,7 +55,8 @@ hlx::Parser::parseSourceFile() {
       break;
     }
 
-    auto fn = parseFunctionDecl();
+    auto fn = isExtern ? parseExternDecl() : parseFunctionDecl();
+
     if (!fn) {
       synchronize(TokenKind::KwFn);
       continue;
@@ -89,6 +91,34 @@ std::unique_ptr<hlx::FunctionDecl> hlx::Parser::parseFunctionDecl() {
                                         std::move(*parameterList));
 }
 
+//<externDecl>
+//::= 'extern' 'fn' <ident> <parameterList> ':' <type> ';'
+std::unique_ptr<hlx::FunctionDecl> hlx::Parser::parseExternDecl(){
+  eatNextToken();
+
+  matchOrReturn(TokenKind::KwFn, "expected 'fn' after 'extern'");
+  SourceLocation location = nextToken.location;
+  eatNextToken();
+
+  matchOrReturn(TokenKind::Identifier, "expected identifier");
+  std::string functionIdentifier = *nextToken.value;
+  eatNextToken();
+
+  varOrReturn(parameterList, parseParameterList());
+
+  matchOrReturn(TokenKind::Colon, "expected ':'");
+  eatNextToken(); // eat ':'
+
+  varOrReturn(type, parseType());
+
+  matchOrReturn(TokenKind::Semi, "expected ';' after extern declaration");
+  eatNextToken(); // eat ';'
+
+  return std::make_unique<FunctionDecl>(location, functionIdentifier, *type,
+                                        nullptr, std::move(*parameterList));
+
+}
+
 std::optional<hlx::Type> hlx::Parser::parseType() {
   TokenKind kind = nextToken.kind;
   if (kind == TokenKind::KwVoid) {
@@ -117,7 +147,6 @@ std::optional<hlx::Type> hlx::Parser::parseType() {
     eatNextToken();
     return Type::builtinString();
   }
-  
 
   report(nextToken.location, "expected type specifier");
   return std::nullopt;

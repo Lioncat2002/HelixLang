@@ -1,3 +1,10 @@
+#include "src/core/codegen/Codegen.h"
+#include "src/core/lexer/Lexer.h"
+#include "src/core/parser/Parser.h"
+#include "src/core/sema/Sema.h"
+#include "src/utils/Driver.h"
+#include "src/utils/Loader.h"
+#include "src/utils/Utils.h"
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -7,86 +14,72 @@
 #include <sstream>
 #include <system_error>
 #include <utility>
-#include "src/core/lexer/Lexer.h"
-#include "src/core/parser/Parser.h"
-#include "src/core/sema/Sema.h"
-#include "src/core/codegen/Codegen.h"
-#include "src/utils/Driver.h"
-#include "src/utils/Utils.h"
+
 
 int main(int argc, const char **argv) {
-    hlx::CompilerOptions options=hlx::parseArguments(argc, argv);
+  hlx::CompilerOptions options = hlx::parseArguments(argc, argv);
 
-    if(options.displayHelp){
-        hlx::displayHelp();
-        return 0;
+  if (options.displayHelp) {
+    hlx::displayHelp();
+    return 0;
+  }
+  if (options.source.empty())
+    hlx::error("no source file empty");
+
+  if (options.source.extension() != ".hlx")
+    hlx::error("unexpected source file extension");
+
+  hlx::Loader loader;
+  auto [ast, success] = loader.loadProgram(options.source);
+
+  if (options.astDump) {
+    for (auto &&fn : ast) {
+      fn->dump();
     }
-    if(options.source.empty())
-        hlx::error("no source file empty");
+    return 0;
+  }
 
-    if(options.source.extension()!=".hlx")
-        hlx::error("unexpected source file extension");
-    
-    std::ifstream file(options.source);
-    if(!file)
-        hlx::error("failed to open '"+options.source.string()+'\'');
+  if (!success)
+    return 1;
 
-    std::stringstream buffer;
-    buffer<<file.rdbuf();
-    hlx::SourceFile sourceFile={options.source.c_str(),buffer.str()};
+  hlx::Sema sema(std::move(ast));
+  auto resolvedTree = sema.resolveAST();
 
-    hlx::Lexer lexer(sourceFile);
-    hlx::Parser parser(lexer);
+  if (options.resDump) {
+    for (auto &&fn : resolvedTree)
+      fn->dump();
+    return 0;
+  }
 
-    auto [ast,success]=parser.parseSourceFile();
+  if (resolvedTree.empty()) {
+    return 1;
+  }
 
-    if(options.astDump){
-        for(auto &&fn:ast){
-            fn->dump();
-        }
-        return 0;
-    }
+  hlx::Codegen codegen(std::move(resolvedTree), options.source.c_str());
 
-    if(!success)
-        return 1;
+  llvm::Module *llvmIR = codegen.generateIR();
+  if (options.llvmDump) {
+    llvmIR->print(llvm::outs(), nullptr);
+    return 0;
+  }
 
-    hlx::Sema sema(std::move(ast));
-    auto resolvedTree=sema.resolveAST();
+  std::stringstream path;
+  path << "tmp-" << std::filesystem::hash_value(options.source) << ".ll";
+  const std::string &&llvmIRPath = path.str();
 
-    if(options.resDump){
-        for(auto &&fn:resolvedTree)
-            fn->dump();
-        return 0;
-    }
+  std::error_code errorCode;
+  llvm::raw_fd_ostream f(llvmIRPath, errorCode);
+  llvmIR->print(f, nullptr);
 
-    if (resolvedTree.empty()) {
-        return 1;
-    }
+  std::stringstream command;
+  command << "clang " << llvmIRPath;
+  if (!options.output.empty())
+    command << "-o" << options.output;
 
-    hlx::Codegen codegen(std::move(resolvedTree),options.source.c_str());
+  command << " -lm";
+  int ret = std::system(command.str().c_str());
 
-    llvm::Module *llvmIR=codegen.generateIR();
-    if(options.llvmDump){
-        llvmIR->print(llvm::outs(), nullptr);
-        return 0;
-    }
+  std::filesystem::remove(llvmIRPath);
 
-    std::stringstream path;
-    path<<"tmp-"<<std::filesystem::hash_value(options.source)<<".ll";
-    const std::string &&llvmIRPath=path.str();
-
-    std::error_code errorCode;
-    llvm::raw_fd_ostream f(llvmIRPath,errorCode);
-    llvmIR->print(f, nullptr);
-
-    std::stringstream command;
-    command<<"clang "<<llvmIRPath;
-    if(!options.output.empty())
-        command<<"-o"<<options.output;
-
-    int ret=std::system(command.str().c_str());
-
-    std::filesystem::remove(llvmIRPath);
-
-    return ret;
+  return ret;
 }

@@ -1,0 +1,33 @@
+fn add(a:number,b:number): number {
+    return a+b;
+}
+
+// Rounding
+extern fn floor(x: number): number;
+extern fn ceil(x: number): number;
+extern fn round(x: number): number;
+extern fn trunc(x: number): number;
+extern fn fabs(x: number): number;      // absolute value
+
+// Powers and roots
+extern fn pow(x: number, y: number): number;
+extern fn sqrt(x: number): number;
+extern fn cbrt(x: number): number;
+extern fn hypot(x: number, y: number): number;
+
+// Exponents and logs
+extern fn exp(x: number): number;
+extern fn log(x: number): number;       // natural log
+extern fn log2(x: number): number;
+extern fn log10(x: number): number;
+
+// Trigonometry
+extern fn sin(x: number): number;
+extern fn cos(x: number): number;
+extern fn tan(x: number): number;
+extern fn atan2(y: number, x: number): number;
+
+// Other
+extern fn fmod(x: number, y: number): number;   // remainder
+extern fn atof(s: string): number;              // "3.14" to 3.14
+extern fn drand48(): number;                    // random, 0 to 1

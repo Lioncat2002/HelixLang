@@ -1,0 +1,38 @@
+import "math.hlx";
+
+fn main():void{
+    let sum=add(10,20);
+
+    println("Sum:");
+    println(sum);
+
+    println("Rounding:");
+    println(floor(3.7));
+    println(ceil(3.2));
+    println(round(3.5));
+    println(trunc(3.9));
+    println(fabs(0-4.5));
+
+    println("Powers and roots:");
+    println(pow(2,5));
+    println(sqrt(16));
+    println(cbrt(27));
+    println(hypot(3,4));
+
+    println("Exponents and logs:");
+    println(exp(1));
+    println(log(exp(2)));
+    println(log2(8));
+    println(log10(1000));
+
+    println("Trigonometry:");
+    println(sin(0));
+    println(cos(0));
+    println(tan(0));
+    println(atan2(1,1));
+
+    println("Other:");
+    println(fmod(10,3));
+    println(atof("3.14"));
+    println(drand48());
+}

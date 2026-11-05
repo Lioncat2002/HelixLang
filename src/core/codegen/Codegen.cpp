@@ -20,7 +20,8 @@ llvm::Module *hlx::Codegen::generateIR() {
   }
 
   for (auto &&function : resolvedTree) {
-    generateFunctionBody(*function);
+    if(function->body)
+      generateFunctionBody(*function);
   }
 
   generateMainWrapper();
