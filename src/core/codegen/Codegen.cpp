@@ -113,7 +113,7 @@ void hlx::Codegen::generateFunctionBody(
     return;
   }
 
-  builder.CreateRet(builder.CreateLoad(builder.getDoubleTy(), retVal));
+  builder.CreateRet(builder.CreateLoad(generateType(functionDecl.type), retVal));
 }
 
 llvm::Type *hlx::Codegen::generateType(hlx::Type type) {
